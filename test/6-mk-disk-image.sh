@@ -1,17 +1,15 @@
 #!/bin/bash
 #
-# export https_proxy=http://example.com:999
 #
-[ -z ${ACRN_MNT_VOL} ] && ACRN_MNT_VOL=/acrn-vol
 [ -z ${ACRN_ENV_VARS} ] && ACRN_ENV_VARS=acrn-env.txt
-
-cd ${ACRN_MNT_VOL} || { echo "Failed to cd "${ACRN_MNT_VOL}; exit -1; }
-
 [ -f ${ACRN_ENV_VARS} ] && \
-	        { for line in `cat ${ACRN_ENV_VARS}`; do export $line; done; }
+    { for line in `cat ${ACRN_ENV_VARS}`; do export $line; done; }
 
-
+[ -z ${ACRN_MNT_VOL} ] && ACRN_MNT_VOL=/acrn-vol
+cd ${ACRN_MNT_VOL} || { echo "Failed to cd "${ACRN_MNT_VOL}; exit -1; }
 [ -z ${ACRN_HV_DIR} ] && ACRN_HV_DIR=acrn-hypervisor
+
+set -x
 
 #
 # $1 -- the dir where SOS vmlinuz and modules are (set INSTALL_PATH  and

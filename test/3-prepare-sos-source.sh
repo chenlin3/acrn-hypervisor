@@ -12,18 +12,14 @@
 #   5. for i in `ls ../linux-pk414/*.patch`; do patch -p1 <$i; done;
 #   6. cp ../linux-pk414/config-pk414-sos  .config
 #
-# export https_proxy=http://example.com:999
 
+[ -z ${ACRN_ENV_VARS} ] && ACRN_ENV_VARS=acrn-env.txt
+[ -f ${ACRN_ENV_VARS} ] && \
+    { for line in `cat ${ACRN_ENV_VARS}`; do export $line; done; }
 
 # All works will be done in this folder. We "git clone" all ACRN repositories,
 # compile, and then build disk image there. Make sure that it has 30GB space
-[ -z ${ACRN_MNT_VOL} ] && ACRN_MNT_VOL=/acrn-vol
-[ -z ${ACRN_ENV_VARS} ] && ACRN_ENV_VARS=acrn-env.txt
 
-cd ${ACRN_MNT_VOL} || { echo "Failed to cd "${ACRN_MNT_VOL}; exit -1; }
-
-[ -f ${ACRN_ENV_VARS} ] && \
-	        { for line in `cat ${ACRN_ENV_VARS}`; do export $line; done; }
 
 
 # The dirname of Linux kernel source for SOS.
@@ -32,7 +28,6 @@ cd ${ACRN_MNT_VOL} || { echo "Failed to cd "${ACRN_MNT_VOL}; exit -1; }
 # version. Bease that, we download a tarball from www.kernel.org, uncompress
 # it. If u have a stable kernel git and checkout the right version, set this. 
 # For exmaple, linux-4.14.39
-ACRN_SOS_DIR=auto
 
 # In linux-pk414 git, there is linux-pk414.spec file. Get kernel base
 # from the "Source0: https://" in that file.
@@ -82,6 +77,7 @@ apply_patches() {
         cp ../linux-pk414/config-pk414-sos  .config
 }
 
+set -x
 
 # clone pkt414 kenrel, which hosts the SOS kernel patches. If it exists,
 # we don't update it (git pull), instead assume that you want to use the
@@ -108,4 +104,4 @@ export ACRN_SOS_DIR=${ACRN_SOS_DIR}
 
 echo "Stable kernel source in: "${ACRN_SOS_DIR}
 
-env | grep ACRN > ${ACRN_MNT_VOL}/${ACRN_ENV_VARS}
+env | grep ACRN_ > ${ACRN_MNT_VOL}/${ACRN_ENV_VARS}

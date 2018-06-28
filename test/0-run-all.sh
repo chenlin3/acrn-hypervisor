@@ -6,9 +6,10 @@
 #     dd, fdisk, losetup, mkfs.vfat, mkfs.ext3, mount, umount,
 #     docker qemu-system_x86-64
 #
+LOG_FILE=log.txt
+[ $# -ne 0 ] && LOG_FILE=$1
 
 # Run as root or "sudo -E "
-
 
 # mounting point in docker for ACRN_HOST_DIR
 export ACRN_MNT_VOL=/acrn-vol
@@ -18,7 +19,7 @@ export ACRN_MNT_VOL=/acrn-vol
 # space. The script will create it if it doesn't exist. If u don't want
 # that large image, change the layout as ACRN_DISK_IMAGE
 # export ACRN_HOST_DIR=/home/${USER}/vdisk
-export ACRN_HOST_DIR=/home/minskey/vdisk
+export ACRN_HOST_DIR=/work/vdisk
 
 # The final disk image layout for qemu or dd to disk, change it as u like
 export ACRN_DISK_IMAGE=clear_rootfs.img
@@ -41,7 +42,7 @@ export ACRN_CLEAR_URL=https://cdn.download.clearlinux.org
 export ACRN_DOCKER_IMAGE=acrn-clear
 
 # Docker created from ACRN_DOCKER_IMAGE to build source code and disk image
-export ACRN_DOCKER_NAME=acrn-dev-test
+export ACRN_DOCKER_NAME=acrn-dev
 
 # UEFI firmware which will be used for QEMU booting
 export ACRN_UEFI_FW=OVMF-pure-efi.fd
@@ -55,34 +56,34 @@ export ACRN_ENV_VARS=acrn-env.txt
 cd ${ACRN_HOST_DIR}/
 
 # Pull KVM image of clearlinux, and build a docker image as dev environment
-./1-docker-from-clear.sh
+./1-docker-from-clear.sh 2>&1 | tee log.txt
 [ $? -ne 0 ] && { echo "failed to build clearlinux docker image"; exit -1; }
 
 # Create and run ClearLinux Docker
-./2-setup-clearlinux-docker.sh
+./2-setup-clearlinux-docker.sh 2>&1 | tee log.txt
 [ $? -ne 0 ] && { echo "failed to run clearlinux docker"; exit -1; }
 
 # prepare SOS kernel source code
-docker exec ${ACRN_DOCKER_NAME}  ${ACRN_MNT_VOL}/3-prepare-sos-source.sh
+docker exec ${ACRN_DOCKER_NAME}  ${ACRN_MNT_VOL}/3-prepare-sos-source.sh 2>&1 | tee log.txt
 [ $? -ne 0 ] && { echo "failed to get SOS kernel source"; exit 1; }
 
 
 # prepare HV/DM source code
-docker exec ${ACRN_DOCKER_NAME}  ${ACRN_MNT_VOL}/4-clone-hv-dm.sh
+docker exec ${ACRN_DOCKER_NAME}  ${ACRN_MNT_VOL}/4-clone-hv-dm.sh 2>&1 | tee log.txt
 [ $? -ne 0 ] && { echo "failed to get ACRN hypervisor source"; exit 1; }
 
 
 # build source to binary
-docker exec ${ACRN_DOCKER_NAME} ${ACRN_MNT_VOL}/5-build-uefi-acrn.sh
+docker exec ${ACRN_DOCKER_NAME} ${ACRN_MNT_VOL}/5-build-uefi-acrn.sh 2>&1 | tee log.txt
 [ $? -ne 0 ] && { echo "failed to build SOS"; exit; }
 
 
 # Create a disk image
-docker exec ${ACRN_DOCKER_NAME} ${ACRN_MNT_VOL}/6-mk-disk-image.sh \
+docker exec ${ACRN_DOCKER_NAME} ${ACRN_MNT_VOL}/6-mk-disk-image.sh  2>&1 | tee log.txt
 # [ $? -ne 0 ] && { echo "failed to create disk image"; exit; }
 
 # download OVMF efi firmware
-docker exec ${ACRN_DOCKER_NAME} ${ACRN_MNT_VOL}/7-download-ovmf.sh
+docker exec ${ACRN_DOCKER_NAME} ${ACRN_MNT_VOL}/7-download-ovmf.sh 2>&1 | tee log.txt
 
 # change ownership
 docker exec ${ACRN_DOCKER_NAME} chmod 777 ${ACRN_MNT_VOL}/${ACRN_UEFI_FW}

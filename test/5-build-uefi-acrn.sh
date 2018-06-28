@@ -3,21 +3,17 @@
 # This script is expected to run in ClearLinux host or docker developement
 # environment. Make sure system has the following commands before executing
 #     grep, basename, dirname,
-
-# export https_proxy=http://example.com:999
-
+[ -z ${ACRN_ENV_VARS} ] && ACRN_ENV_VARS=acrn-env.txt
+[ -f ${ACRN_ENV_VARS} ] && \
+    { for line in `cat ${ACRN_ENV_VARS}`; do export $line; done; }
 
 # In this foleder, We "git clone" all ACRN repos, and then build disk image.
 # Make sure that it has 30GB  space or you change reduce the image disze.
 [ -z ${ACRN_MNT_VOL} ] && ACRN_MNT_VOL=/acrn-vol
-[ -z ${ACRN_ENV_VARS} ] && ACRN_ENV_VARS=acrn-env.txt
+
 cd ${ACRN_MNT_VOL} || { echo "Failed to cd "${ACRN_MNT_VOL}; exit -1; }
 
-[ -f ${ACRN_ENV_VARS} ] && \
-	        { for line in `cat ${ACRN_ENV_VARS}`; do export $line; done; }
-
 [ -z ${ACRN_HV_DIR} ] && ACRN_HV_DIR=${ACRN_MNT_VOL}"/acrn-hypervisor"
-
 
 build_sos_kernel() {
         cd ${ACRN_SOS_DIR} || return 1
@@ -57,6 +53,8 @@ build_sos_kernel() {
         fi
 }
 
+set -x
+
 let fail=0
 
 # build acrn hypervisor, device module and tools
@@ -68,4 +66,3 @@ cd ${ACRN_MNT_VOL} && build_sos_kernel || { echo "Failed to build service OS"; f
 env | grep ACRN > ${ACRN_MNT_VOL}/${ACRN_ENV_VARS}
 
 exit ${fail}
-

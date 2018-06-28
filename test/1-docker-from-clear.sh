@@ -5,13 +5,13 @@
 # create docker image for ACRN dev environment. Because we use losetup and
 # mount, "sudo -E" if running it via non-root account.
 #
-[ -z ${ACRN_MNT_VOL} ] && ACRN_MNT_VOL=/acrn-vol
-[ -z ${ACRN_HOST_DIR} ] && ACRN_HOST_DIR=/home/${USER}/vdisk
-[ -z ${ACRN_ENV_VARS} ] && ACRN_ENV_VARS=acrn-env.txt
-
 # Set env vars in case we are called by 0-all script
+[ -z ${ACRN_ENV_VARS} ] && ACRN_ENV_VARS=acrn-env.txt
 [ -f ${ACRN_ENV_VARS} ] && \
 	{ for line in `cat ${ACRN_ENV_VARS}`; do export $line; done; }
+
+[ -z ${ACRN_MNT_VOL} ] && ACRN_MNT_VOL=/acrn-vol
+[ -z ${ACRN_HOST_DIR} ] && ACRN_HOST_DIR=/home/${USER}/vdisk
 
 [ -z ${ACRN_DOCKER_NAME} ] && ACRN_DOCKER_NAME=acrn-dev
 [ -z ${ACRN_DOCKER_IMAGE} ] && ACRN_DOCKER_IMAGE=acrn-clear
@@ -73,7 +73,7 @@ function download_image()
 
 	echo "Download image: " $1/$2
 
-	wget -L -c $1/$2 && xz -kd $2 || return -1
+	wget -q -L -c $1/$2 && xz -kd $2 || return -1
 }
 
 # $1: ACRN_CLEAR_OS_VERSION
