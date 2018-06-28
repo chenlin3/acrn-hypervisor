@@ -17,18 +17,20 @@
 # space since disk image will be created there.
 [ -z ${ACRN_HOST_DIR} ] && ACRN_HOST_DIR=/home/${USER}/vdisk
 [ -z ${ACRN_MNT_VOL} ] && ACRN_MNT_VOL=/acrn-vol
-[ -z ${ACRN_DOCKER_NAME} ] && ACRN_DOCKER_NAME=acrn-dev
 [ -z ${ACRN_ENV_VARS} ] && ACRN_ENV_VARS=acrn-env.txt
+
+# Set env vars in case we are called by 0-all script
+[ -f ${ACRN_ENV_VARS} ] && \
+        { for line in `cat ${ACRN_ENV_VARS}`; do export $line; done; }
 
 # The image is used to create a docker to build ACRN source code.
 [ -z ${ACRN_DOCKER_IMAGE} ] && ACRN_DOCKER_IMAGE=acrn-clear
+[ -z ${ACRN_DOCKER_NAME} ] && ACRN_DOCKER_NAME=acrn-dev
 
 set -x
 
 # Create the dir if doesn't exsit
 mkdir -p ${ACRN_HOST_DIR}
-
-env | grep ACRN_  > ${ACRN_HOST_DIR}/${ACRN_ENV_VARS}
 
 is_container_name_conflict() {
 	RET=`docker ps -a -q --format='{{.Names}}' | grep ${ACRN_DOCKER_NAME}`
@@ -54,7 +56,6 @@ else
 	echo "Image is in local repo."
 fi;
 
-
 # Need to access /dev/loopX device, privileged is required :(
 docker create -it -v /dev:/dev/ --privileged --name=${ACRN_DOCKER_NAME} \
 	-v ${ACRN_HOST_DIR}:${ACRN_MNT_VOL} --net=host \
@@ -63,6 +64,8 @@ docker create -it -v /dev:/dev/ --privileged --name=${ACRN_DOCKER_NAME} \
 	--entrypoint "/bin/bash" ${ACRN_DOCKER_IMAGE} 
 
 docker start ${ACRN_DOCKER_NAME} && exit 0;
+
+env | grep ACRN_  > ${ACRN_HOST_DIR}/${ACRN_ENV_VARS}
 
 exit 1;
 
