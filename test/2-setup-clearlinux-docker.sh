@@ -23,6 +23,8 @@
 # The image is used to create a docker to build ACRN source code.
 [ -z ${ACRN_DOCKER_IMAGE} ] && ACRN_DOCKER_IMAGE=acrn-clear
 
+set -x
+
 # Create the dir if doesn't exsit
 mkdir -p ${ACRN_HOST_DIR}
 

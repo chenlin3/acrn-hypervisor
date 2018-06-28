@@ -18,7 +18,7 @@ export ACRN_MNT_VOL=/acrn-vol
 # space. The script will create it if it doesn't exist. If u don't want
 # that large image, change the layout as ACRN_DISK_IMAGE
 # export ACRN_HOST_DIR=/home/${USER}/vdisk
-export ACRN_HOST_DIR=/home/${USER}/vdisk
+export ACRN_HOST_DIR=/home/minskey/vdisk
 
 # The final disk image layout for qemu or dd to disk, change it as u like
 export ACRN_DISK_IMAGE=clear_rootfs.img
@@ -37,7 +37,7 @@ export ACRN_CLEAR_OS_VERSION=""
 # download image from there. Don't change it unless u know the URL is changed
 export ACRN_CLEAR_URL=https://cdn.download.clearlinux.org
 
-# the docker image which we will create: ${USER}/${DOCKER_IMAGE}:${OS_VERSION}
+# the docker image which we will create: ${DOCKER_IMAGE}:${OS_VERSION}
 export ACRN_DOCKER_IMAGE=acrn-clear
 
 # Docker created from ACRN_DOCKER_IMAGE to build source code and disk image

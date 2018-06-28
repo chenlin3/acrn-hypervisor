@@ -87,12 +87,12 @@ function build_docker_image()
 	mount ${img_loopdev}p3 ${mnt_pt}
 
 	# Use the rootfs of clear-xxx-kvm.img.xz as a docker base image
-	tar -C ${mnt_pt} -c . | docker import - ${USER}/${ACRN_DOCKER_IMAGE}:"t"$1
+	tar -C ${mnt_pt} -c . | docker import - ${ACRN_DOCKER_IMAGE}:"t"$1
 
 	docker create --name=${ACRN_DOCKER_NAME} --net=host  ${PROXY_CONF} \
 		-v /dev:/dev/ --privileged \
 		-v ${ACRN_HOST_DIR}:${ACRN_MNT_VOL} \
-		-it ${USER}/${ACRN_DOCKER_IMAGE}:"t"$1 "/bin/bash"
+		-it ${ACRN_DOCKER_IMAGE}:"t"$1 "/bin/bash"
 
 	docker start ${ACRN_DOCKER_NAME}
 	docker exec ${ACRN_DOCKER_NAME} mkdir -p /etc/ssl/certs/
@@ -103,10 +103,9 @@ function build_docker_image()
 		c-basic storage-utils  os-core-dev
 	docker exec ${ACRN_DOCKER_NAME} pip3 install kconfiglib
 	docker stop ${ACRN_DOCKER_NAME}
+	docker commit ${ACRN_DOCKER_NAME} ${ACRN_DOCKER_IMAGE}:$1
 	docker rm ${ACRN_DOCKER_NAME}
-
-	docker commit ${ACRN_DOCKER_NAME} ${USER}/${ACRN_DOCKER_IMAGE}:$1
-	docker rmi  ${USER}/${ACRN_DOCKER_IMAGE}:"t"$1
+	docker rmi  ${ACRN_DOCKER_IMAGE}:"t"$1
 
 	umount ${mnt_pt}
 	losetup -D ${img_loopdev}
@@ -125,7 +124,7 @@ ACRN_CLEAR_OS_VERSION=`echo ${CLEAR_IMAGE_FNAME} | grep -ioe "[0-9]*"`
 
 build_docker_image ${ACRN_CLEAR_OS_VERSION} ${CLEAR_IMAGE_FNAME::-3}
 
-export ACRN_DOCKER_IMAGE=${USER}/${ACRN_DOCKER_IMAGE}:${ACRN_CLEAR_OS_VERSION}
+export ACRN_DOCKER_IMAGE=${ACRN_DOCKER_IMAGE}:${ACRN_CLEAR_OS_VERSION}
 
 env | grep ACRN_  > ${ACRN_HOST_DIR}/${ACRN_ENV_VARS}
 
