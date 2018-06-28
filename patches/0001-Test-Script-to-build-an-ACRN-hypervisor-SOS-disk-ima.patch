@@ -1,0 +1,117 @@
+From 6c77dfa7bce5ce50b52b17859473eca9b64f3850 Mon Sep 17 00:00:00 2001
+From: Chaohong guo <chaohong.guo@intel.com>
+Date: Wed, 23 May 2018 00:56:06 +0800
+Subject: [RFC:test 1/7] Test Script to build an ACRN hypervisor/SOS disk image
+
+Add few test scripts to run in docker to perform git-clone, build and then
+create disk image, and at last start it in qemu/ovmf.
+
+Signed-off-by: Chaohong guo <chaohong.guo@intel.com>
+---
+ test/0-run-all.sh | 94 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 94 insertions(+)
+ create mode 100755 test/0-run-all.sh
+
+diff --git a/test/0-run-all.sh b/test/0-run-all.sh
+new file mode 100755
+index 0000000..77f76fc
+--- /dev/null
++++ b/test/0-run-all.sh
+@@ -0,0 +1,94 @@
++#!/bin/bash
++#
++# This script is expected to run in a developement environment with Qemu and
++# docker. Make sure that system has the following commands before executing 
++#     wget, sha512sum, grep, xz, basename, dirname,
++#     dd, fdisk, losetup, mkfs.vfat, mkfs.ext3, mount, umount,
++#     docker qemu-system_x86-64
++#
++# https_proxy=http://example.com:999
++
++# Docker Name:  Create a docker to build source code and disk image
++export ACRN_DOCKER_NAME=acrn-dev
++
++# mounting point in docker for ACRN_HOST_DIR
++export ACRN_MNT_VOL=/acrn-vol
++
++# the fold will be mounted into docker, as ${ACRN_MNT_VOL}, We "git clone"
++# acrn code, build disk image(20GB) there. Make sure that it has enought
++# space. The script will create it if it doesn't exist. If u don't want
++# that large image, change the size.
++export ACRN_HOST_DIR=/home/${USER}/vdisk
++
++# save environment between scripts
++export ACRN_ENV_VARS=acrn-env.txt
++
++# Docker pull image (which is not updated frequently)
++#  You can also create a docker image for youself based on latest official
++#  clearlinux docker image. By the dockerfile:
++#
++#      From clearlinux:latest
++#      MAINTAINER  test
++#      RUN swupd update
++#      RUN swupd  bundle-add c-basic storage-utils  os-core
++#      CMD ["/bin/bash"]
++#                  
++export DOCKER_IMAGE=clearlinux/clr-sdk
++
++# UEFI firmware which will be used for QEMU booting
++export ACRN_UEFI_FW=OVMF-pure-efi.fd
++
++# The final disk image which can be used in qemu or dd to disk, and the
++# partition of it
++export ACRN_DISK_IMAGE=clear_rootfs.img
++export ACRN_DISK_SIZE=13240  # disk size (MB)
++export ACRN_DISK_P1=200      # EFI ESP
++export ACRN_DISK_P2=200      # Linux swap
++export ACRN_DISK_P3=4096     # sos rootfs
++export ACRN_DISK_P4=         # user partition
++
++# Create and run ClearLinux Docker
++./1-setup-clearlinux-docker.sh
++[ $? -ne 0 ] && { echo "failed to run clearlinux docker"; exit -1; }
++
++# prepare SOS kernel source code
++docker exec ${ACRN_DOCKER_NAME}  ${ACRN_MNT_VOL}/2-prepare-sos-source.sh
++[ $? -ne 0 ] && { echo "failed to get SOS kernel source"; exit 1; }
++
++
++# prepare HV/DM source code
++docker exec ${ACRN_DOCKER_NAME}  ${ACRN_MNT_VOL}/3-clone-hv-dm.sh
++[ $? -ne 0 ] && { echo "failed to get ACRN hypervisor source"; exit 1; }
++
++
++# build source to binary
++docker exec ${ACRN_DOCKER_NAME} ${ACRN_MNT_VOL}/4-build-uefi-acrn.sh
++[ $? -ne 0 ] && { echo "failed to build SOS"; exit; }
++
++
++# Create a disk image
++docker exec ${ACRN_DOCKER_NAME} ${ACRN_MNT_VOL}/5-mk-disk-image.sh \
++# [ $? -ne 0 ] && { echo "failed to create disk image"; exit; }
++
++# download OVMF efi firmware
++docker exec ${ACRN_DOCKER_NAME} ${ACRN_MNT_VOL}/6-download-ovmf.sh
++
++# change ownership
++docker exec ${ACRN_DOCKER_NAME} chmod 777 ${ACRN_MNT_VOL}/${ACRN_UEFI_FW}
++docker exec ${ACRN_DOCKER_NAME} chmod 777 ${ACRN_MNT_VOL}/${ACRN_DISK_IMAGE}
++docker exec ${ACRN_DOCKER_NAME} chmod 777 ${ACRN_MNT_VOL}/${ACRN_ENV_VARS}
++
++
++docker stop  ${ACRN_DOCKER_NAME}
++docker rm   ${ACRN_DOCKER_NAME}
++
++# run qemu/ovmf in local host
++sed -i 's/^ACRN_/export ACRN_/g' ${ACRN_HOST_DIR}/${ACRN_ENV_VARS}
++source ${ACRN_HOST_DIR}/${ACRN_ENV_VARS}
++
++
++echo "If failed,  you can try manully staring by: qemu-system-x86_64 -bios " \
++	${ACRN_HOST_DIR}/${ACRN_UEFI_FW} \
++	-hda "${ACRN_HOST_DIR}/${ACRN_DISK_IMAGE}"
++
++qemu-system-x86_64 -bios ${ACRN_HOST_DIR}/${ACRN_UEFI_FW} -hda ${ACRN_HOST_DIR}/${ACRN_DISK_IMAGE} -m 4G -cpu Broadwell -smp cpus=4,cores=4,threads=1
+-- 
+2.14.1
+

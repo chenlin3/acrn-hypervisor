@@ -1,0 +1,153 @@
+
+
+1. Enable ACRN Shell on UART
+---------------------------
+ACRN hypervisor provides a shell based on serial port for debugging goal. It
+can be used to print some messges from hypervisor and service OS, and check
+the status of hyperviosr of them.  To enable it, the user needs to fill out
+the right UART base address into ACRN source code file and compile the source
+code with debug version. By default, the environment variable "RELEASE=0" 
+will enable the compile for debugging.
+
+Currently, ACRN doesn't support UART probing. Instead, users have to know of
+their UART hardware: the base address of UART registers, either memory-mapped
+address and I/O address. For example, the I/O address 0x3F8 or 0x2F8; or mmio
+0x92230000, which is the based of UART registers. Once you get this address,
+Take a look at the file acrn-hypervisor/hypervisor/bsp/uefi/efi/boot.c, 
+
+	mbi->mi_cmdline = (UINTN)"uart=mmio@0x92230000";
+        mbi->mi_cmdline = (UINTN)"uart=port@0x3F8";
+        mbi->mi_cmdline = (UINTN)"uart=disabled";
+
+Comments out one of then to enable or disable uart. For enabling, pay attention
+to the address after "@". If the address is NOT right, ACRN hypervisor will wait
+for 5 minutes before starting up.
+
+
+2. UART Shell
+-------------
+After compiling hypervisor with console shell enabling, the user can connect
+his host system to target system via UART. All boot messages will be posted
+into the console during ACRN hyperivosr boot period. Once service OS boots up,
+the shell will be activated, and show the prompt:
+
+	ACRN:\>
+
+In this shell, the user can input "help" to check the supported commands:
+
+    ACRN:\>help
+
+    Registered Commands:
+
+      help             - Display info about the supported shell commands.
+      vm_list          - Lists all VMs (VM Name, VM ID, VM State)
+      vcpu_list        - Lists all VCPU in all VMs
+      vcpu_pause      <vm id, vcpu id> - Pause a specific vcpu
+      vcpu_resume     <vm id, vcpu id> - Resume a specific vcpu
+      vcpu_dumpreg    <vm id, vcpu id> - Dump registers for a specific vcpu
+      vcpu_dumpmem    <vcpu id, gva, length> - Dump memory for a specific vcpu
+      vm_console       - Switch to SOS's console
+      int              - show interrupt info per CPU
+      pt               - show pass-through device info
+      lsreq            - show ioreq info
+      vioapic         <vm id> - show vioapic info
+      dump_ioapic      - show native ioapic info
+      vmexit           - show vmexit profiling
+      logdump         <pcpu id> - log buffer dump
+      get_loglevel     - Get the loglevel
+      set_loglevel    <console_loglevel> [mem_loglevel] - Set loglevel [0-6]
+      cpuid           <leaf> [subleaf] - cpuid leaf [subleaf], in hexadecimal
+      reboot           - trigger system warm reboot
+
+
+3. Log collection
+-------------------------
+
+ACRN defines 5-level log based on severity. During compiling, the user can
+choose to enable it logged into memory (and then written into disk files by
+daemon in service OS), and/or post the logs into console. If in-memory log
+is enabled, the parameter "hvlog=size@mem_addr" is needed in acrn.conf to
+request hypervisor/service OS to reserve a contiguous memory block, which
+will be used as shared buffer between hypervisor and service OS.
+
+3.1 config options and API
+--------------------------
+In the file acrn-hypervisor/hypervisor/bsp/uefi/efi/boot.c, the micro,
+
+     #define LOG_DESTITION	3
+
+is used to direct the logging into memory/console. Currently, only the lest
+significant 2 bits are used:
+
+           bit 0 -- LOG_FLAG_STDOUT
+           bit 1 -- LOG_FLAG_MEMORY
+
+And 5 APIs are provided corresponding to the 5-level severities of logs,
+
+             API                SEVERITY LEVEL
+        -------------------------------------
+	pr_fatal(fmt, ...)          1
+	pr_err(fmt, ...)            2
+	pr_warn(fmt, ...)           3
+	pr_info(fmt, ...)           4
+	pr_dbg(fmt, ...)            5
+
+The user can decide whether or not to log that messages during compiling and
+runtime period.  For UEFI platform, In  the file acrn-hypervisor/hypervisor/
+bsp/uefi/include/bsp/bsp_cfg.h,
+
+	#define CONSOLE_LOGLEVEL_DEFAULT	2
+	#define MEM_LOGLEVEL_DEFAULT		4
+
+The messages with severity level less than default will be printed. If console
+shell is enabled, the user can change the threadholds by:
+
+        ACRN:\> set_loglevel <console_loglevel> [mem_loglevel]
+
+Note that the memory range for in-memory logging should be below 4GB, for
+example, add the following into acrn.conf (refer to hypervisor/bsp/uefi/
+clearlinux/acrn.conf),
+
+	 hvlog=2M@0xFFE00000       # reserve 2M bytes at 0xFFE00000
+
+
+3.2 acrnlog tool
+----------------
+The user land tool acrnlog (should be executed as a service/daemon) can be used
+to collect the in-memory logs and write it into /tmp/acrnlog/. 
+
+The memory reserved by "hvlog=size@mem_addr" is split into 8 blocks to support
+4 CPUs, each CPU has two blocks, one for current logs, the other for last boot
+logs. So, you can find 8 char devices in the dir /dev/, like,
+
+               /dev/acrn_hvlog_*
+
+Each blocks of every CPUs is used as a ring buffer, The acrnlog reads/cleans
+the logs in each char devices, and write them into an individual file in the
+dir /tmp/acrnlog/ for each blocks.
+
+
+
+4. acrntrace
+------------
+The ACRN provides trace mechanism for developers to look into service OS, and
+hypervisor. Unlike acrnlog, which requires static reserved memory blocks, the
+memory(shared buffer) of trace mechanism is allocated when kernel trace.ko 
+module is being loaded. and released when trace.ko is unloaded.
+
+When the kernel driver (trace.ko) is loaded by "modprobe trace.ko" or "insmod",
+4 device nodes will show up, like /dev/acrn_trace_{0, 1, 2, 3}.  After that,
+you can run acrntrace to trace pre-defined system events. 
+
+Refer to hypervisor/include/debug/trace.h file to check the pre-defined events,
+for example TRACE_VM_EXIT event will trace virtual machine exit event. You can
+add more events if it is helpful for your development.
+
+Like acrnlog, acrntrace reads the trace events from the char devices and write
+them into /tmp/acrntrace/. The user can copy that event records to other place
+or system, and then analysize it.  Some scripts can be used to analysize the
+event records.
+
+
+5. acrnmanager
+--------------------
