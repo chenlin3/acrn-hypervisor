@@ -23,8 +23,8 @@
 # Respect the shell environment https_proxy in Docker
 [ -z ${https_proxy} ] || PROXY_CONF="-e https_proxy="${https_proxy}
 
-PEM_SUPD=Swupd_Root.pem 
-PEM_CLEAR=ClearLinuxRoot.pem
+PEM_SUPD='Swupd_Root.pem'
+PEM_CLEAR='ClearLinuxRoot.pem'
 
 name_conflict()
 {
@@ -95,12 +95,15 @@ function build_docker_image()
 		-it ${USER}/${ACRN_DOCKER_IMAGE}:"t"$1 "/bin/bash"
 
 	docker start ${ACRN_DOCKER_NAME}
+	docker exec ${ACRN_DOCKER_NAME} mkdir -p /etc/ssl/certs/
+	docker exec ${ACRN_DOCKER_NAME} cp ${ACRN_MNT_VOL}/${PEM_SUPD} /etc/ssl/certs/
+	docker exec ${ACRN_DOCKER_NAME} cp ${ACRN_MNT_VOL}/${PEM_CLEAR} /etc/ssl/certs/
 	docker exec ${ACRN_DOCKER_NAME} swupd update
 	docker exec ${ACRN_DOCKER_NAME} swupd bundle-add \
 		c-basic storage-utils  os-core-dev
 	docker exec ${ACRN_DOCKER_NAME} pip3 install kconfiglib
-	docker exec ${ACRN_DOCKER_NAME} cp ${ACRN_MNT_VOL}/*.pem /etc/ssl/certs/
 	docker stop ${ACRN_DOCKER_NAME}
+	docker rm ${ACRN_DOCKER_NAME}
 
 	docker commit ${ACRN_DOCKER_NAME} ${USER}/${ACRN_DOCKER_IMAGE}:$1
 	docker rmi  ${USER}/${ACRN_DOCKER_IMAGE}:"t"$1

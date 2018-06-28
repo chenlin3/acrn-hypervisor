@@ -18,7 +18,7 @@ export ACRN_MNT_VOL=/acrn-vol
 # space. The script will create it if it doesn't exist. If u don't want
 # that large image, change the layout as ACRN_DISK_IMAGE
 # export ACRN_HOST_DIR=/home/${USER}/vdisk
-export ACRN_HOST_DIR=/home/minskey/vdisk
+export ACRN_HOST_DIR=/home/${USER}/vdisk
 
 # The final disk image layout for qemu or dd to disk, change it as u like
 export ACRN_DISK_IMAGE=clear_rootfs.img
@@ -57,8 +57,6 @@ cd ${ACRN_HOST_DIR}/
 # Pull KVM image of clearlinux, and build a docker image as dev environment
 ./1-docker-from-clear.sh
 [ $? -ne 0 ] && { echo "failed to build clearlinux docker image"; exit -1; }
-
-exit;
 
 # Create and run ClearLinux Docker
 ./2-setup-clearlinux-docker.sh
