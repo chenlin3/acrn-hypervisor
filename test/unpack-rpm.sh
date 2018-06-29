@@ -70,7 +70,7 @@ offset=`expr $offset \- 8 + $hdr_size`
 dd if=$RPM_PKG of=$TMP_FILE ibs=$offset skip=1
 
 # If the rpm package is compressed by otehr compressor, add it here :)
-compressor=`file $TMP_FILE | grep -Eio 'gzip | bzip2 | xz'`
+compressor=`file $TMP_FILE | grep -Eio 'gzip | bzip2 | xz' | tr 'A-Z' 'a-z'`
 
 cat $TMP_FILE | $compressor -d | cpio -ivdm
 

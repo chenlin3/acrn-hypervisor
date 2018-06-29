@@ -56,34 +56,35 @@ export ACRN_ENV_VARS=acrn-env.txt
 cd ${ACRN_HOST_DIR}/
 
 # Pull KVM image of clearlinux, and build a docker image as dev environment
-./1-docker-from-clear.sh 2>&1 | tee log.txt
+./1-docker-from-clear.sh 2>&1 | tee -a log.txt
 [ $? -ne 0 ] && { echo "failed to build clearlinux docker image"; exit -1; }
 
 # Create and run ClearLinux Docker
-./2-setup-clearlinux-docker.sh 2>&1 | tee log.txt
+./2-setup-clearlinux-docker.sh 2>&1 | tee -a log.txt
 [ $? -ne 0 ] && { echo "failed to run clearlinux docker"; exit -1; }
 
 # prepare SOS kernel source code
-docker exec ${ACRN_DOCKER_NAME}  ${ACRN_MNT_VOL}/3-prepare-sos-source.sh 2>&1 | tee log.txt
+docker exec ${ACRN_DOCKER_NAME}  ${ACRN_MNT_VOL}/3-prepare-sos-source.sh 2>&1 \
+	| tee -a log.txt
 [ $? -ne 0 ] && { echo "failed to get SOS kernel source"; exit 1; }
 
 
 # prepare HV/DM source code
-docker exec ${ACRN_DOCKER_NAME}  ${ACRN_MNT_VOL}/4-clone-hv-dm.sh 2>&1 | tee log.txt
+docker exec ${ACRN_DOCKER_NAME}  ${ACRN_MNT_VOL}/4-clone-hv-dm.sh 2>&1 | tee -a log.txt
 [ $? -ne 0 ] && { echo "failed to get ACRN hypervisor source"; exit 1; }
 
 
 # build source to binary
-docker exec ${ACRN_DOCKER_NAME} ${ACRN_MNT_VOL}/5-build-uefi-acrn.sh 2>&1 | tee log.txt
+docker exec ${ACRN_DOCKER_NAME} ${ACRN_MNT_VOL}/5-build-uefi-acrn.sh 2>&1 | tee -a log.txt
 [ $? -ne 0 ] && { echo "failed to build SOS"; exit; }
 
 
 # Create a disk image
-docker exec ${ACRN_DOCKER_NAME} ${ACRN_MNT_VOL}/6-mk-disk-image.sh  2>&1 | tee log.txt
+docker exec ${ACRN_DOCKER_NAME} ${ACRN_MNT_VOL}/6-mk-disk-image.sh  2>&1 | tee -a log.txt
 # [ $? -ne 0 ] && { echo "failed to create disk image"; exit; }
 
 # download OVMF efi firmware
-docker exec ${ACRN_DOCKER_NAME} ${ACRN_MNT_VOL}/7-download-ovmf.sh 2>&1 | tee log.txt
+docker exec ${ACRN_DOCKER_NAME} ${ACRN_MNT_VOL}/7-download-ovmf.sh 2>&1 | tee -a log.txt
 
 # change ownership
 docker exec ${ACRN_DOCKER_NAME} chmod 777 ${ACRN_MNT_VOL}/${ACRN_UEFI_FW}
@@ -92,7 +93,9 @@ docker exec ${ACRN_DOCKER_NAME} chmod 777 ${ACRN_MNT_VOL}/${ACRN_ENV_VARS}
 
 
 docker stop  ${ACRN_DOCKER_NAME}
-docker rm   ${ACRN_DOCKER_NAME}
+
+# For debugging, don't rm the docker
+# docker rm   ${ACRN_DOCKER_NAME}
 
 # run qemu/ovmf in local host
 sed -i 's/^ACRN_/export ACRN_/g' ${ACRN_HOST_DIR}/${ACRN_ENV_VARS}
