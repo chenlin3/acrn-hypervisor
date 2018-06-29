@@ -30,8 +30,8 @@ else
 fi;
 [ -f ${OVMF_RPM} ] || echo "Failed to download OVMF rpm: " ${URL_EDK2}/${OVMF_RPM}
 
-`which rpm2cpio`
-if [ $? -ne 0 ]; then
+`which rpm2cpio > /dev/null`
+if [ $? -eq 0 ]; then
 	rpm2cpio ${OVMF_RPM} | cpio -idvm
 else
 	./unpack-rpm.sh ${OVMF_RPM}
