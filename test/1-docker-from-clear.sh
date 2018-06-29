@@ -108,7 +108,7 @@ function build_docker_image()
 	docker rmi  ${ACRN_DOCKER_IMAGE}:"t"$1
 
 	umount ${mnt_pt}
-	losetup -D ${img_loopdev}
+	losetup -d ${img_loopdev}
 
 }
 

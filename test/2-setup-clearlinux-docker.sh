@@ -4,7 +4,7 @@
 # This script is expected to run in ClearLinux host or docker developement
 # environment. Make sure system has the following commands before executing 
 #     wget, sha512sum, grep, xz, basename, dirname,
-#     dd, fdisk, losetup, mkfs.vfat, mkfs.ext3, mount, umount,
+#     dd, fdisk, vfat, mkfs.ext3, mount, umount,
 #
 # Set env vars in case we are called by 0-all script
 [ -z ${ACRN_ENV_VARS} ] && ACRN_ENV_VARS=acrn-env.txt
