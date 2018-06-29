@@ -35,7 +35,7 @@ build_sos_kernel() {
         fi;
 
         # accept default options (no firmware build)
-        (echo -e "n\nn\nn\nn\nn\n") | make bzImage
+        (echo -e "n\nn\nn\nn\nn\n") | make | make bzImage
 
         make modules
         make modules_install

@@ -12,10 +12,12 @@
 #   5. for i in `ls ../linux-pk414/*.patch`; do patch -p1 <$i; done;
 #   6. cp ../linux-pk414/config-pk414-sos  .config
 #
-
+set -x
 [ -z ${ACRN_ENV_VARS} ] && ACRN_ENV_VARS=acrn-env.txt
 [ -f ${ACRN_ENV_VARS} ] && \
     { for line in `cat ${ACRN_ENV_VARS}`; do export $line; done; }
+
+cd ${ACRN_MNT_VOL};
 
 # All works will be done in this folder. We "git clone" all ACRN repositories,
 # compile, and then build disk image there. Make sure that it has 30GB space
@@ -76,8 +78,6 @@ apply_patches() {
         fi;
         cp ../linux-pk414/config-pk414-sos  .config
 }
-
-set -x
 
 # clone pkt414 kenrel, which hosts the SOS kernel patches. If it exists,
 # we don't update it (git pull), instead assume that you want to use the
