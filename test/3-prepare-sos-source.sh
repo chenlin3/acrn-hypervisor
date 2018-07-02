@@ -30,6 +30,7 @@ cd ${ACRN_MNT_VOL};
 # version. Bease that, we download a tarball from www.kernel.org, uncompress
 # it. If u have a stable kernel git and checkout the right version, set this. 
 # For exmaple, linux-4.14.39
+ACRN_SOS_DIR="auto"
 
 # In linux-pk414 git, there is linux-pk414.spec file. Get kernel base
 # from the "Source0: https://" in that file.
