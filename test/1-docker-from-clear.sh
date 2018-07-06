@@ -109,8 +109,9 @@ function build_docker_image()
 
 	umount ${mnt_pt}
 	losetup -d ${img_loopdev}
-
 }
+
+
 
 # Create the dir if doesn't exsit
 mkdir -p ${ACRN_HOST_DIR}
