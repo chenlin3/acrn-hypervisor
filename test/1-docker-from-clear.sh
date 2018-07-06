@@ -100,7 +100,7 @@ function build_docker_image()
 	docker exec ${ACRN_DOCKER_NAME} cp ${ACRN_MNT_VOL}/${PEM_CLEAR} /etc/ssl/certs/
 #	docker exec ${ACRN_DOCKER_NAME} swupd update
 	docker exec ${ACRN_DOCKER_NAME} swupd bundle-add \
-		c-basic storage-utils  dev-utils-dev
+		c-basic storage-utils-dev  dev-utils-dev user-basic-dev
 	docker exec ${ACRN_DOCKER_NAME} pip3 install kconfiglib
 	docker stop ${ACRN_DOCKER_NAME}
 	docker commit ${ACRN_DOCKER_NAME} ${ACRN_DOCKER_IMAGE}:$1

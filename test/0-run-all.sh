@@ -99,7 +99,7 @@ docker exec ${ACRN_DOCKER_NAME} chmod 777 ${ACRN_MNT_VOL}/${ACRN_ENV_VARS}
 
 docker stop  ${ACRN_DOCKER_NAME}
 
-# For debugging, don't rm the docker
+# Comment this if you want to keep the docker for debugging or build env.
 # docker rm   ${ACRN_DOCKER_NAME}
 
 # run qemu/ovmf in local host
