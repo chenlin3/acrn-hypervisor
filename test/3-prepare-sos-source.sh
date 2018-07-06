@@ -13,11 +13,13 @@
 #   6. cp ../linux-pk414/config-pk414-sos  .config
 #
 set -x
+cd ${ACRN_MNT_VOL};
+
 [ -z ${ACRN_ENV_VARS} ] && ACRN_ENV_VARS=acrn-env.txt
 [ -f ${ACRN_ENV_VARS} ] && \
     { for line in `cat ${ACRN_ENV_VARS}`; do export $line; done; }
 
-cd ${ACRN_MNT_VOL};
+
 
 # All works will be done in this folder. We "git clone" all ACRN repositories,
 # compile, and then build disk image there. Make sure that it has 30GB space

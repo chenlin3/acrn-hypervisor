@@ -33,8 +33,8 @@ export ACRN_DISK_P4=         # user partition uses the rest
 # pull the image from clearlinux.org and use it to buld a docker image
 # by default, we use the latest one:
 #     https://cdn.download.clearlinux.org/current
- export ACRN_CLEAR_OS_VERSION=23370
-# export ACRN_CLEAR_OS_VERSION=""
+# export ACRN_CLEAR_OS_VERSION=23370
+export ACRN_CLEAR_OS_VERSION=""
 
 # download image from there. Don't change it unless u know the URL is changed
 export ACRN_CLEAR_URL=https://cdn.download.clearlinux.org
@@ -69,16 +69,13 @@ docker exec ${ACRN_DOCKER_NAME}  ${ACRN_MNT_VOL}/3-prepare-sos-source.sh 2>&1 \
 	| tee -a log.txt
 [ $? -ne 0 ] && { echo "failed to get SOS kernel source"; exit 1; }
 
-
 # prepare HV/DM source code
 docker exec ${ACRN_DOCKER_NAME}  ${ACRN_MNT_VOL}/4-clone-hv-dm.sh 2>&1 | tee -a log.txt
 [ $? -ne 0 ] && { echo "failed to get ACRN hypervisor source"; exit 1; }
 
-
 # build source to binary
 docker exec ${ACRN_DOCKER_NAME} ${ACRN_MNT_VOL}/5-build-uefi-acrn.sh 2>&1 | tee -a log.txt
 [ $? -ne 0 ] && { echo "failed to build SOS"; exit; }
-
 
 # Create a disk image
 docker exec ${ACRN_DOCKER_NAME} ${ACRN_MNT_VOL}/6-mk-disk-image.sh  2>&1 | tee -a log.txt
