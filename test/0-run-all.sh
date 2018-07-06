@@ -12,8 +12,8 @@
 # a KVM image from http://clearlinux.org and use it as base image for docker.
 # By default, the latest KVM image by parsing the web page:
 #               https://cdn.download.clearlinux.org/current/
-export ACRN_CLEAR_OS_VERSION=23370
-# export ACRN_CLEAR_OS_VERSION=""
+# export ACRN_CLEAR_OS_VERSION=23370
+export ACRN_CLEAR_OS_VERSION=""
 
 
 # The folder will be mounted into docker as volume in docker's work,  to the
@@ -21,8 +21,8 @@ export ACRN_CLEAR_OS_VERSION=23370
 # clone acrn code, build disk image(20GB). Make sure that it has enough space.
 # If the dir doesn't exist, the script will create it if not exist. Change the
 # layout as you like.
-# export ACRN_HOST_DIR=/home/${USER}/vdisk
-export ACRN_HOST_DIR=/work/vdisk
+export ACRN_HOST_DIR=/home/${USER}/vdisk
+# export ACRN_HOST_DIR=/work/vdisk
 
 # The final disk image layout for qemu/ovmf or dd to disk, change it as u like
 export ACRN_DISK_IMAGE=clear_rootfs.img
@@ -118,11 +118,10 @@ docker exec ${ACRN_DOCKER_NAME} chmod 777 ${ACRN_MNT_VOL}/${ACRN_UEFI_FW}
 docker exec ${ACRN_DOCKER_NAME} chmod 777 ${ACRN_MNT_VOL}/${ACRN_DISK_IMAGE}
 docker exec ${ACRN_DOCKER_NAME} chmod 777 ${ACRN_MNT_VOL}/${ACRN_ENV_VARS}
 
-
 docker stop  ${ACRN_DOCKER_NAME}
 
 # Comment this if you want to keep the docker for debugging or build env.
-# docker rm   ${ACRN_DOCKER_NAME}
+docker rm   ${ACRN_DOCKER_NAME}
 
 # run qemu/ovmf in local host
 sed -i 's/^ACRN_/export ACRN_/g' ${ACRN_HOST_DIR}/${ACRN_ENV_VARS}

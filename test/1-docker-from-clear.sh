@@ -50,7 +50,7 @@ function get_url()
 		IMAGE_BASE=${ACRN_CLEAR_URL}/current
 
 		# Pattern: <a href="clear-xxxxx-kvm.img.xz">clear-xxxxx-kvm.img.xz</a>
-		HREF=`curl -L ${IMAGE_BASE} | \
+		HREF=`curl -sSL ${IMAGE_BASE} | \
 		    grep -Pioe "<a +href *= *\"?clear-[0-9]*-kvm.img.xz[^\-].*?</a>" | \
 		    grep -Pioe \"clear-[0-9]*-kvm.img.xz\"`
 		CLEAR_IMAGE_FNAME=`echo ${HREF} | sed 's/\"//g'`
@@ -58,8 +58,8 @@ function get_url()
 		       	{ echo "Failed to get ClearLinux image URL"; exit 1; }
 	fi;
 
-	curl -L ${IMAGE_BASE}/${PEM_SUPD} -o ${PEM_SUPD}
-	curl -L ${IMAGE_BASE}/${PEM_CLEAR} -o ${PEM_CLEAR}
+	curl -sSL ${IMAGE_BASE}/${PEM_SUPD} -o ${PEM_SUPD}
+	curl -sSL ${IMAGE_BASE}/${PEM_CLEAR} -o ${PEM_CLEAR}
 }
 
 # S1: URL base of clearlinux image
@@ -73,7 +73,7 @@ function download_image()
 
 	echo "Download image: " $1/$2
 
-	wget -q -L -c $1/$2 && xz -kd $2 || return -1
+	wget -q -c $1/$2 && xz -kd $2 || return -1
 }
 
 # $1: ACRN_CLEAR_OS_VERSION
