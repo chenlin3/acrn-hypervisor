@@ -10,18 +10,27 @@ LOG_FILE=log.txt
 [ $# -ne 0 ] && LOG_FILE=$1
 
 # Run as root or "sudo -E "
+# In fact, only the fist script (1-docker-from-clear.sh) needs to run with
+# "sudo -E" because it uses "losetup" and "mount" commands in host system 
+# to get the base image (rootfs) from clearlinux KVM image.
 
-# mounting point in docker for ACRN_HOST_DIR
-export ACRN_MNT_VOL=/acrn-vol
 
-# The folder will be mounted into docker, as ${ACRN_MNT_VOL}, "git clone"
-# acrn code, build disk image(20GB) there. Make sure that it has enough
-# space. The script will create it if it doesn't exist. If u don't want
-# that large image, change the layout as ACRN_DISK_IMAGE
+
+# The release# of clearlinux in /usr/lib/os-release: like 23140, we will
+# pull the image from clearlinux.org and use it to buld a docker image
+# by default, use the latest: https://cdn.download.clearlinux.org/current
+export ACRN_CLEAR_OS_VERSION=23370
+# export ACRN_CLEAR_OS_VERSION=""
+
+
+# The folder will be mounted into docker, as ${ACRN_MNT_VOL}. We use it as
+# workspace (pwd) to git clone acrn code, build disk image(20GB). Make sure
+# that it has enough space.  If the dir doesn't exist, the script will create
+# it if it doesn't exist. Change the layout as you like.
 # export ACRN_HOST_DIR=/home/${USER}/vdisk
 export ACRN_HOST_DIR=/work/vdisk
 
-# The final disk image layout for qemu or dd to disk, change it as u like
+# The final disk image layout for qemu/ovmf or dd to disk, change it as u like
 export ACRN_DISK_IMAGE=clear_rootfs.img
 export ACRN_DISK_SIZE=13240  # disk size (MB)
 export ACRN_DISK_P1=200      # EFI ESP
@@ -29,27 +38,25 @@ export ACRN_DISK_P2=200      # Linux swap
 export ACRN_DISK_P3=4096     # sos rootfs
 export ACRN_DISK_P4=         # user partition uses the rest
 
-# The release# of clearlinux in /usr/lib/os-release: like 23140, we will
-# pull the image from clearlinux.org and use it to buld a docker image
-# by default, we use the latest one:
-#     https://cdn.download.clearlinux.org/current
-# export ACRN_CLEAR_OS_VERSION=23370
-export ACRN_CLEAR_OS_VERSION=""
-
-# download image from there. Don't change it unless u know the URL is changed
+# Download Clearlinux OS image from there. Don't change it unless u know the
+# URL is changed
 export ACRN_CLEAR_URL=https://cdn.download.clearlinux.org
 
-# the docker image which we will create: ${DOCKER_IMAGE}:${OS_VERSION}
+# the name of the docker image that we will create: ${DOCKER_IMAGE}:${OS_VERSION}
 export ACRN_DOCKER_IMAGE=acrn-clear
 
 # Docker created from ACRN_DOCKER_IMAGE to build source code and disk image
 export ACRN_DOCKER_NAME=acrn-dev
 
-# UEFI firmware which will be used for QEMU booting
+# UEFI firmware which will be used for QEMU booting. It is the filename in UEFI
+# rpm package from UEFI open source project. 
 export ACRN_UEFI_FW=OVMF-pure-efi.fd
 
 # Save environment between scripts. Needn't touch it.
 export ACRN_ENV_VARS=acrn-env.txt
+
+# Mounting point in docker for ACRN_HOST_DIR. Needn't touch it unless u hate it
+export ACRN_MNT_VOL=/acrn-vol
 
 
 [ `pwd` != ${ACRN_HOST_DIR} ] && cp *.sh ${ACRN_HOST_DIR}/

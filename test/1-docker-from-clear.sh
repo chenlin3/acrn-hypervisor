@@ -112,7 +112,6 @@ function build_docker_image()
 }
 
 
-
 # Create the dir if doesn't exsit
 mkdir -p ${ACRN_HOST_DIR}
 
@@ -126,11 +125,14 @@ download_image  ${IMAGE_BASE} ${CLEAR_IMAGE_FNAME}
 
 ACRN_CLEAR_OS_VERSION=`echo ${CLEAR_IMAGE_FNAME} | grep -ioe "[0-9]*"`
 
-export ACRN_DOCKER_IMAGE=${ACRN_DOCKER_IMAGE}:${ACRN_CLEAR_OS_VERSION}
+IMAGE=${ACRN_DOCKER_IMAGE}:${ACRN_CLEAR_OS_VERSION}
 
-DOCKER_TAG=`docker images -q acrn-clear:23370 --format={{.Repository}}:{{.Tag}}`
-[ ${DOCKER_TAG}X != ${ACRN_DOCKER_IMAGE=} ] && \
+DOCKER_TAG=`docker images -q ${IMAGE} --format={{.Repository}}:{{.Tag}}`
+
+[ ${DOCKER_TAG}X != "${IMAGE}"X ] && \
 	build_docker_image ${ACRN_CLEAR_OS_VERSION} ${CLEAR_IMAGE_FNAME::-3}
+
+export ACRN_DOCKER_IMAGE=${IMAGE}
 
 env | grep ACRN_  > ${ACRN_HOST_DIR}/${ACRN_ENV_VARS}
 

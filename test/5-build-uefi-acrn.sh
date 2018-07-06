@@ -28,6 +28,7 @@ build_sos_kernel() {
         sed -i '1i PWD=$(shell pwd)\nEXTRAVERSION=-acrn\n' Makefile
         sed -i '2a export INSTALL_PATH=$(PWD)/out' Makefile
         sed -i '3a export INSTALL_MOD_PATH=$(PWD)/out' Makefile
+        sed -i '4a export CCACHE_DISABLE=1' Makefile
 
         # remove firmware compiling in kconfig
         sed -i '/CONFIG_EXTRA_FIRMWARE/'d  .config
@@ -55,6 +56,9 @@ build_sos_kernel() {
 }
 
 set -x
+
+# ccache causes the build failure on clearlinux-kvm-23370. Disable it
+export CCACHE_DISABLE=1
 
 # build service OS
 cd ${ACRN_MNT_VOL} && build_sos_kernel || { echo "Failed to build service OS"; exit 1; }
