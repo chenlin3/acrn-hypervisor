@@ -30,7 +30,7 @@ cd ${ACRN_MNT_VOL};
 # version. Bease that, we download a tarball from www.kernel.org, uncompress
 # it. If u have a stable kernel git and checkout the right version, set this. 
 # For exmaple, linux-4.14.39
-ACRN_SOS_DIR="auto"
+SOS_DIR="auto"
 
 # In linux-pk414 git, there is linux-pk414.spec file. Get kernel base
 # from the "Source0: https://" in that file.
@@ -46,19 +46,19 @@ get_base_kernel_version() {
         URL_STABLE_KERNEL=${SOURCE:${INDEX}}
         cd ../
 	KERNEL_XZ=`basename ${URL_STABLE_KERNEL}`
-	ACRN_SOS_DIR=`echo ${KERNEL_XZ/.tar.xz/}`
+	SOS_DIR=`echo ${KERNEL_XZ/.tar.xz/}`
 }
 
 # wget is faster than git clone stable kernel. If you already has stable
 # tree, git checkout it to replace the func
 wget_kernel() {
-	[ -d ${ACRN_SOS_DIR} ] && { echo "SOS source exsits, use the old"; return 0; }
+	[ -d ${SOS_DIR} ] && { echo "SOS source exsits, use the old"; return 0; }
 	
 	if [ -r ${KERNEL_XZ} ]; then
 		echo ${KERNEL_XZ}" exsits, will use it instead of download it again"
 	else
 		echo "Downloading kernel: "${URL_STABLE_KERNEL}
-		wget -c ${URL_STABLE_KERNEL}
+		wget -c -q ${URL_STABLE_KERNEL}
 	fi;
 	
 	[ $? -ne 0 ] && return 1
@@ -70,7 +70,7 @@ wget_kernel() {
 
 # patch stable kernel with ACRN sos patch set
 apply_patches() {
-        cd ${ACRN_SOS_DIR} || return 1
+        cd ${SOS_DIR} || return 1
         for i in `ls ../linux-pk414/*.patch`; do patch -p1 <$i; done;
         if [ $? -eq 0 ]; then
                 echo "Completed patching !"
@@ -91,18 +91,18 @@ else
 fi;
 
 
-[ ${ACRN_SOS_DIR}X == "auto"X ] && get_base_kernel_version
+[ ${SOS_DIR}X == "auto"X ] && get_base_kernel_version
 
 # use the existing SOS kernel base or donwload it
-[ -d ${ACRN_SOS_DIR} ] ||  wget_kernel 
+[ -d ${SOS_DIR} ] ||  wget_kernel 
 [ $? -ne 0 ] && exit 1;
 
 # apply the patches in pk414 repo to SOS kernel
-[ -d ${ACRN_SOS_DIR} ] && apply_patches
+[ -d ${SOS_DIR} ] && apply_patches
 
 # export it in Docker and indicate that SOS source is Ok
-export ACRN_SOS_DIR=${ACRN_SOS_DIR}
+export ACRN_SOS_DIR=${SOS_DIR}
 
-echo "Stable kernel source in: "${ACRN_SOS_DIR}
+echo "Stable kernel source in: "${SOS_DIR}
 
 env | grep ACRN_ > ${ACRN_MNT_VOL}/${ACRN_ENV_VARS}
