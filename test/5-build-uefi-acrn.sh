@@ -37,9 +37,9 @@ build_sos_kernel() {
         fi;
 
         # accept default options (no firmware build)
-        (echo -e "n\nn\nn\nn\nn\n") | make | make bzImage
-
+        (echo -e "n\nn\nn\nn\nn\n") | make 
         make modules
+	make bzImage
         make modules_install
 
 	CLEAR_ID=`grep -n 'ID[ ]*=*clear-*linux' /usr/lib/os-release`

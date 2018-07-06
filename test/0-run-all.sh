@@ -6,27 +6,21 @@
 #     dd, fdisk, losetup, mkfs.vfat, mkfs.ext3, mount, umount,
 #     docker qemu-system_x86-64
 #
-LOG_FILE=log.txt
-[ $# -ne 0 ] && LOG_FILE=$1
+[ $# -ne 0 ] && LOG_FILE=$1 || LOG_FILE=log.txt
 
-# Run as root or "sudo -E "
-# In fact, only the fist script (1-docker-from-clear.sh) needs to run with
-# "sudo -E" because it uses "losetup" and "mount" commands in host system 
-# to get the base image (rootfs) from clearlinux KVM image.
-
-
-
-# The release# of clearlinux in /usr/lib/os-release: like 23140, we will
-# pull the image from clearlinux.org and use it to buld a docker image
-# by default, use the latest: https://cdn.download.clearlinux.org/current
+# The release# of clearlinux in /usr/lib/os-release: like 23140, we will pull
+# a KVM image from http://clearlinux.org and use it as base image for docker.
+# By default, the latest KVM image by parsing the web page:
+#               https://cdn.download.clearlinux.org/current/
 export ACRN_CLEAR_OS_VERSION=23370
 # export ACRN_CLEAR_OS_VERSION=""
 
 
-# The folder will be mounted into docker, as ${ACRN_MNT_VOL}. We use it as
-# workspace (pwd) to git clone acrn code, build disk image(20GB). Make sure
-# that it has enough space.  If the dir doesn't exist, the script will create
-# it if it doesn't exist. Change the layout as you like.
+# The folder will be mounted into docker as volume in docker's work,  to the
+# mounting point at ${ACRN_MNT_VOL}. We use it as work diretory (pwd) to git
+# clone acrn code, build disk image(20GB). Make sure that it has enough space.
+# If the dir doesn't exist, the script will create it if not exist. Change the
+# layout as you like.
 # export ACRN_HOST_DIR=/home/${USER}/vdisk
 export ACRN_HOST_DIR=/work/vdisk
 
@@ -38,14 +32,16 @@ export ACRN_DISK_P2=200      # Linux swap
 export ACRN_DISK_P3=4096     # sos rootfs
 export ACRN_DISK_P4=         # user partition uses the rest
 
-# Download Clearlinux OS image from there. Don't change it unless u know the
+# Download Clearlinux OS image by the URL. Don't change it unless u know the
 # URL is changed
 export ACRN_CLEAR_URL=https://cdn.download.clearlinux.org
 
-# the name of the docker image that we will create: ${DOCKER_IMAGE}:${OS_VERSION}
+# the name of the docker image that we will create. In fact, will add a tag
+# by clearlinux os-version
 export ACRN_DOCKER_IMAGE=acrn-clear
 
-# Docker created from ACRN_DOCKER_IMAGE to build source code and disk image
+# Docker name created from ACRN_DOCKER_IMAGE as development environment to
+# build ACRN source code and disk image.
 export ACRN_DOCKER_NAME=acrn-dev
 
 # UEFI firmware which will be used for QEMU booting. It is the filename in UEFI
@@ -55,41 +51,67 @@ export ACRN_UEFI_FW=OVMF-pure-efi.fd
 # Save environment between scripts. Needn't touch it.
 export ACRN_ENV_VARS=acrn-env.txt
 
-# Mounting point in docker for ACRN_HOST_DIR. Needn't touch it unless u hate it
+# Mounting point in docker for ACRN_HOST_DIR. Needn't touch it
 export ACRN_MNT_VOL=/acrn-vol
 
-
-[ `pwd` != ${ACRN_HOST_DIR} ] && cp *.sh ${ACRN_HOST_DIR}/
+[ `pwd` != ${ACRN_HOST_DIR} ] && cp -a *.sh ${ACRN_HOST_DIR}/
 
 cd ${ACRN_HOST_DIR}/
 
+touch ${LOG_FILE}
+echo -n "==== Runing script 1-docker-from-clear.sh  ====@ " > ${LOG_FILE}
+date >> ${LOG_FILE}
+
+# Only the fist script (1-docker-from-clear.sh) needs to run with "sudo -E"
+# because it uses "losetup" and "mount" commands in host system to get the
+# base image (rootfs) from clearlinux KVM image.
+#
 # Pull KVM image of clearlinux, and build a docker image as dev environment
-./1-docker-from-clear.sh 2>&1 | tee -a log.txt
+./1-docker-from-clear.sh 2>&1 | tee -a ${LOG_FILE}
 [ $? -ne 0 ] && { echo "failed to build clearlinux docker image"; exit -1; }
 
+echo -n "==== Runing script 2-setup-clearlinux-docker.sh ====@ " >> ${LOG_FILE}
+date >> ${LOG_FILE}
+
 # Create and run ClearLinux Docker
-./2-setup-clearlinux-docker.sh 2>&1 | tee -a log.txt
+./2-setup-clearlinux-docker.sh 2>&1 | tee -a ${LOG_FILE}
 [ $? -ne 0 ] && { echo "failed to run clearlinux docker"; exit -1; }
+
+echo -n "==== Runing script 3-prepare-sos-source.sh  ====@ " >> ${LOG_FILE}
+date >> ${LOG_FILE}
 
 # prepare SOS kernel source code
 docker exec ${ACRN_DOCKER_NAME}  ${ACRN_MNT_VOL}/3-prepare-sos-source.sh 2>&1 \
-	| tee -a log.txt
+	| tee -a ${LOG_FILE}
 [ $? -ne 0 ] && { echo "failed to get SOS kernel source"; exit 1; }
 
+echo -n "==== Runing script 4-clone-hv-dm.sh  ====@ " >> ${LOG_FILE}
+date >> ${LOG_FILE}
+
 # prepare HV/DM source code
-docker exec ${ACRN_DOCKER_NAME}  ${ACRN_MNT_VOL}/4-clone-hv-dm.sh 2>&1 | tee -a log.txt
+docker exec ${ACRN_DOCKER_NAME}  ${ACRN_MNT_VOL}/4-clone-hv-dm.sh 2>&1 | \
+       	tee -a ${LOG_FILE}
 [ $? -ne 0 ] && { echo "failed to get ACRN hypervisor source"; exit 1; }
 
+echo -n "==== Runing script 5-build-uefi-acrn.sh  ====@ " >> ${LOG_FILE}
+date >> ${LOG_FILE}
+
 # build source to binary
-docker exec ${ACRN_DOCKER_NAME} ${ACRN_MNT_VOL}/5-build-uefi-acrn.sh 2>&1 | tee -a log.txt
+docker exec ${ACRN_DOCKER_NAME} ${ACRN_MNT_VOL}/5-build-uefi-acrn.sh 2>&1 \
+	| tee -a ${LOG_FILE}
 [ $? -ne 0 ] && { echo "failed to build SOS"; exit; }
 
+echo -n "==== Runing script 6-mk-disk-image.sh  ====@ " >> ${LOG_FILE}
+date >> ${LOG_FILE}
+
 # Create a disk image
-docker exec ${ACRN_DOCKER_NAME} ${ACRN_MNT_VOL}/6-mk-disk-image.sh  2>&1 | tee -a log.txt
+docker exec ${ACRN_DOCKER_NAME} ${ACRN_MNT_VOL}/6-mk-disk-image.sh  2>&1 \
+	| tee -a ${LOG_FILE}
 # [ $? -ne 0 ] && { echo "failed to create disk image"; exit; }
 
 # download OVMF efi firmware
-docker exec ${ACRN_DOCKER_NAME} ${ACRN_MNT_VOL}/7-download-ovmf.sh 2>&1 | tee -a log.txt
+docker exec ${ACRN_DOCKER_NAME} ${ACRN_MNT_VOL}/7-download-ovmf.sh 2>&1 \
+	| tee -a ${LOG_FILE}
 
 # change ownership
 docker exec ${ACRN_DOCKER_NAME} chmod 777 ${ACRN_MNT_VOL}/${ACRN_UEFI_FW}

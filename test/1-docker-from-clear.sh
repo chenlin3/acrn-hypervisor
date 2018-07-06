@@ -135,5 +135,6 @@ DOCKER_TAG=`docker images -q ${IMAGE} --format={{.Repository}}:{{.Tag}}`
 export ACRN_DOCKER_IMAGE=${IMAGE}
 
 env | grep ACRN_  > ${ACRN_HOST_DIR}/${ACRN_ENV_VARS}
+chmod 0666 ${ACRN_HOST_DIR}/${ACRN_ENV_VARS}
 
 exit 0;
