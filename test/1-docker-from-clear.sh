@@ -117,14 +117,19 @@ mkdir -p ${ACRN_HOST_DIR}
 
 name_conflict
 [ $? -ne 0 ] && exit 1
+
+# Get URL and set ACRN_CLEAR_OS_VERSION if it is ""
 get_url ${ACRN_CLEAR_OS_VERSION}
+
 download_image  ${IMAGE_BASE} ${CLEAR_IMAGE_FNAME}
 
 ACRN_CLEAR_OS_VERSION=`echo ${CLEAR_IMAGE_FNAME} | grep -ioe "[0-9]*"`
 
-build_docker_image ${ACRN_CLEAR_OS_VERSION} ${CLEAR_IMAGE_FNAME::-3}
-
 export ACRN_DOCKER_IMAGE=${ACRN_DOCKER_IMAGE}:${ACRN_CLEAR_OS_VERSION}
+
+DOCKER_TAG=`docker images -q acrn-clear:23370 --format={{.Repository}}:{{.Tag}}`
+[ ${DOCKER_TAG}X != ${ACRN_DOCKER_IMAGE=} ] && \
+	build_docker_image ${ACRN_CLEAR_OS_VERSION} ${CLEAR_IMAGE_FNAME::-3}
 
 env | grep ACRN_  > ${ACRN_HOST_DIR}/${ACRN_ENV_VARS}
 

@@ -33,8 +33,8 @@ export ACRN_DISK_P4=         # user partition uses the rest
 # pull the image from clearlinux.org and use it to buld a docker image
 # by default, we use the latest one:
 #     https://cdn.download.clearlinux.org/current
-# export ACRN_CLEAR_OS_VERSION=23370
-export ACRN_CLEAR_OS_VERSION=""
+ export ACRN_CLEAR_OS_VERSION=23370
+# export ACRN_CLEAR_OS_VERSION=""
 
 # download image from there. Don't change it unless u know the URL is changed
 export ACRN_CLEAR_URL=https://cdn.download.clearlinux.org

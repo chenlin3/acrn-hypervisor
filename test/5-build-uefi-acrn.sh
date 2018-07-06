@@ -57,7 +57,7 @@ set -x
 
 # build acrn hypervisor, device module and tools
 cd ${ACRN_MNT_VOL} && cd ${ACRN_HV_DIR} && make PLATFORM=uefi || \
-	{ echo "Failed to build hypervisor"; exit 1 }
+	{ echo "Failed to build hypervisor"; exit 1; }
 
 # build service OS
 cd ${ACRN_MNT_VOL} && build_sos_kernel || { echo "Failed to build service OS"; exit 1; }
