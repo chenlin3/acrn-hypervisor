@@ -113,7 +113,7 @@ function build_docker_image()
 	docker rm ${ACRN_DOCKER_NAME}
 	docker rmi  ${ACRN_DOCKER_IMAGE}:"t"$1
 
-	guestumount ${mnt_pt}
+	guestunmount ${mnt_pt}
 }
 
 

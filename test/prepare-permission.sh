@@ -20,7 +20,7 @@ group_list=`groups`
 kvm_group=`stat -c %G /dev/kvm`
 CURR_USER=`whoami`
 
-# Ensure that there is docker group 
+# Ensure that host system has "docker" user group 
 has_docker_group
 if [ $? -eq 0 ]; then
 	echo -n "Need to create a docker group by: \"groupadd docker\", "
