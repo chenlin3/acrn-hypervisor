@@ -105,6 +105,6 @@ fi;
 # export it in Docker and indicate that SOS source is Ok
 export ACRN_SOS_DIR=${SOS_DIR}
 
-echo "Stable kernel source in: "${SOS_DIR}
+echo "Stable kernel source in: "${ACRN_SOS_DIR}
 
 env | grep ACRN_ > ${ACRN_MNT_VOL}/${ACRN_ENV_VARS}

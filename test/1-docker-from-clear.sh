@@ -2,8 +2,7 @@
 
 #
 # This script is to download clearlinux kvm image and use it as a base to
-# create docker image for ACRN dev environment. Because we use losetup and
-# mount, "sudo -E" if running it via non-root account.
+# create docker image for ACRN dev environment.
 #
 # Set env vars in case we are called by 0-all script
 [ -z ${ACRN_ENV_VARS} ] && ACRN_ENV_VARS=acrn-env.txt
@@ -71,9 +70,11 @@ function download_image()
 
 	[ -r $2 ] && xz -kd $2 && { echo $2 " exists, just use it"; return 0; }
 
-	echo "Download image: " $1/$2
-
-	wget -q -c $1/$2 && xz -kd $2 || return -1
+	echo -n "Starting to download image : " $1/$2 "@ "
+       	date 
+	wget -q -c $1/$2 && xz -kd $2 || exit -1
+	echo -n "Completed downloading image : " $1/$2 "@ "
+       	date 
 }
 
 # $1: ACRN_CLEAR_OS_VERSION
@@ -83,8 +84,10 @@ function build_docker_image()
 	set -x
 	local mnt_pt=/tmp/cl_$1
 	mkdir -p ${mnt_pt}
-	img_loopdev=`losetup -f -P --show $2`
-	mount ${img_loopdev}p3 ${mnt_pt}
+
+	# The 3rd partition(/dev/sda3) is the rootfs of clearlinux kvm image.
+	# Change it only if clearlinux changed the layout in the future
+	guestmount -a $2 -m /dev/sda3 ${mnt_pt} || exit 1
 
 	# Use the rootfs of clear-xxx-kvm.img.xz as a docker base image
 	tar -C ${mnt_pt} -c . | docker import - ${ACRN_DOCKER_IMAGE}:"t"$1
@@ -99,16 +102,18 @@ function build_docker_image()
 	docker exec ${ACRN_DOCKER_NAME} cp ${ACRN_MNT_VOL}/${PEM_SUPD} /etc/ssl/certs/
 	docker exec ${ACRN_DOCKER_NAME} cp ${ACRN_MNT_VOL}/${PEM_CLEAR} /etc/ssl/certs/
 #	docker exec ${ACRN_DOCKER_NAME} swupd update
+	echo "Call swupd bundle-add..."
+	date
 	docker exec ${ACRN_DOCKER_NAME} swupd bundle-add \
 		c-basic storage-utils-dev  dev-utils-dev user-basic-dev
+	date
 	docker exec ${ACRN_DOCKER_NAME} pip3 install kconfiglib
 	docker stop ${ACRN_DOCKER_NAME}
 	docker commit ${ACRN_DOCKER_NAME} ${ACRN_DOCKER_IMAGE}:$1
 	docker rm ${ACRN_DOCKER_NAME}
 	docker rmi  ${ACRN_DOCKER_IMAGE}:"t"$1
 
-	umount ${mnt_pt}
-	losetup -d ${img_loopdev}
+	guestumount ${mnt_pt}
 }
 
 
