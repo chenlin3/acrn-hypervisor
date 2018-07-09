@@ -1,9 +1,17 @@
 #!/bin/bash
 
-# libguestfs  libguestfs-tools
+declare -A commands
+commands=(
+	[wget]="Need to install wget commands/package"
+	[xz]="xz commandline missed, install it please"
+	[git]="git command missed, install it first"
+	[docker]="Need to install docker.io package"
+	[guestmount]="Need to install libguestfs and libguestfs-tools package" 
+	[qemu-system-x86_64]="Need to install qemu/x86, qemu-system-x86_64 missed"
+)
 
 # check if a group in group list: $1 group; $2 group list;
-function user_in_group() {
+function group_in_list() {
 	for g in $2; do
 		[ $g == $1 ] && return 1;
 	done
@@ -15,6 +23,12 @@ function has_docker_group() {
 	[ ${tmp}X == "docker:"X ] && return 1;
 	return 0
 }
+
+# ensure that all commandlines defined in commands[]
+for cmd in $(echo ${!commands[*]}); do
+	which ${cmd} >> /dev/null && echo ${cmd} "is ok" || echo commands[${cmd}]
+done;
+
 
 group_list=`groups`
 kvm_group=`stat -c %G /dev/kvm`
@@ -30,18 +44,16 @@ if [ $? -eq 0 ]; then
 fi;
 
 # ensure current user is in docker group
-user_in_group "docker" ${group_list}
+group_in_list "docker" "${group_list}"
 if [ $? -eq 0 ]; then
 	echo -n "Need to add" \"${CURR_USER}\" "into group" \"docker\" "by:"
 	echo -e "  \"usermod -a ${CURR_USER} -G docker\""
 fi;
 
 # ensure current user is in kvm group
-user_in_group ${kvm_group} ${group_list}
-if [ $? == 0 ]; then
+group_in_list ${kvm_group} "${group_list}"
+if [ $? -eq 0 ]; then
 	echo -n "Need to add" \"${CURR_USER}\" "into group" \"${kvm_group}\" "by:"
 	echo -e "  \"usermod -a ${CURR_USER} -G ${kvm_group}\""
 fi;
-
-
 

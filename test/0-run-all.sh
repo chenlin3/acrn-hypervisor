@@ -61,7 +61,7 @@ export ACRN_ENV_VARS=acrn-env.txt
 export ACRN_MNT_VOL=/acrn-vol
 
 # Check if build environment is ok
-./prepare-permission.sh
+./build-env-check.sh
 
 [ `pwd` != ${ACRN_HOST_DIR} ] && cp -a *.sh ${ACRN_HOST_DIR}/
 
