@@ -1,8 +1,6 @@
 #!/bin/bash
 #
 #
-set -x
-
 [ -z ${ACRN_ENV_VARS} ] && ACRN_ENV_VARS=acrn-env.txt
 [ -z ${ACRN_MNT_VOL} ] && ACRN_MNT_VOL=/acrn-vol
 cd ${ACRN_MNT_VOL} || { echo "Failed to cd "${ACRN_MNT_VOL}; exit -1; }
@@ -12,6 +10,7 @@ cd ${ACRN_MNT_VOL} || { echo "Failed to cd "${ACRN_MNT_VOL}; exit -1; }
 
 [ -z ${ACRN_HV_DIR} ] && ACRN_HV_DIR=acrn-hypervisor
 
+[ -z ${ACRN_TRACE_SHELL_ENABLE} ] || set -x
 #
 # $1 -- the dir where SOS vmlinuz and modules are (set INSTALL_PATH  and
 #       INSTALL_MOD_PATH to the dir when building Linux kernel)

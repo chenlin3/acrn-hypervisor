@@ -12,6 +12,8 @@ cd ${ACRN_MNT_VOL} || { echo "Failed to cd "${ACRN_MNT_VOL}; exit -1; }
 
 [ -z ${ACRN_DISK_IMAGE} ] && ACRN_DISK_IMAGE=./clear_rootfs.img
 
+[ -z ${ACRN_TRACE_SHELL_ENABLE} ] || set -x
+
 URL_EDK2="https://www.kraxel.org/repos/jenkins/edk2"
 echo "Trying to access " ${URL_EDK2} " to get OVMF.fd"
 

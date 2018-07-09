@@ -20,7 +20,7 @@ cd ${ACRN_MNT_VOL} || { echo "Failed to cd "${ACRN_MNT_VOL}; exit -1; }
 
 [ -z ${ACRN_HV_DIR} ] && ACRN_HV_DIR=acrn-hypervisor
 
-set -x
+[ -z ${ACRN_TRACE_SHELL_ENABLE} ] || set -x
 
 git clone ${URL_ACRN}/${ACRN_HV_DIR}
 

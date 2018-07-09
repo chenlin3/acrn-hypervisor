@@ -15,6 +15,7 @@ cd ${ACRN_MNT_VOL} || { echo "Failed to cd "${ACRN_MNT_VOL}; exit -1; }
 
 
 [ -z ${ACRN_HV_DIR} ] && ACRN_HV_DIR=${ACRN_MNT_VOL}"/acrn-hypervisor"
+[ -z ${ACRN_TRACE_SHELL_ENABLE} ] || set -x
 
 build_sos_kernel() {
         cd ${ACRN_SOS_DIR} || return 1
@@ -55,7 +56,6 @@ build_sos_kernel() {
         fi
 }
 
-set -x
 
 # ccache causes the build failure on clearlinux-kvm-23370. Disable it
 export CCACHE_DISABLE=1

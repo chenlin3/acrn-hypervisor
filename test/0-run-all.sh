@@ -14,8 +14,8 @@
 # a KVM image from http://clearlinux.org and use it as base image for docker.
 # By default, the latest KVM image by parsing the web page:
 #               https://cdn.download.clearlinux.org/current/
-export ACRN_CLEAR_OS_VERSION=23550
-# export ACRN_CLEAR_OS_VERSION=""
+# export ACRN_CLEAR_OS_VERSION=23550
+export ACRN_CLEAR_OS_VERSION=""
 
 
 # The folder will be mounted into docker as volume in docker's work,  to the
@@ -38,7 +38,11 @@ export ACRN_DISK_P4=         # user partition uses the rest
 # URL is changed
 export ACRN_CLEAR_URL=https://cdn.download.clearlinux.org
 
-# the name of the docker image that we will create. In fact, will add a tag
+# set "ACRN_TRACE_SHELL_ENABLE" to tell all scripts to "set -x". unset it if
+# you don't want to trace shell commands.
+# export ACRN_TRACE_SHELL=1
+
+# The name of the docker image that we will create. We will alos add a tag
 # by clearlinux os-version
 export ACRN_DOCKER_IMAGE=acrn-clear
 
@@ -56,11 +60,12 @@ export ACRN_ENV_VARS=acrn-env.txt
 # Mounting point in docker for ACRN_HOST_DIR. Needn't touch it
 export ACRN_MNT_VOL=/acrn-vol
 
+# Check if build environment is ok
+./prepare-permission.sh
+
 [ `pwd` != ${ACRN_HOST_DIR} ] && cp -a *.sh ${ACRN_HOST_DIR}/
 
 cd ${ACRN_HOST_DIR}/
-
-
 
 
 echo -n "==== Runing script 1-docker-from-clear.sh  ====@ " > ${LOG_FILE}

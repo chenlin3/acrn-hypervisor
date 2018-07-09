@@ -25,7 +25,7 @@
 [ -z ${ACRN_DOCKER_IMAGE} ] && ACRN_DOCKER_IMAGE=acrn-clear
 [ -z ${ACRN_DOCKER_NAME} ] && ACRN_DOCKER_NAME=acrn-dev
 
-set -x
+[ -z ${ACRN_TRACE_SHELL_ENABLE} ] || set -x
 
 # Create the dir if doesn't exsit
 mkdir -p ${ACRN_HOST_DIR}

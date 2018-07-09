@@ -81,7 +81,6 @@ function download_image()
 # $2: raw image file
 function build_docker_image()
 {
-	set -x
 	local mnt_pt=/tmp/cl_$1
 	mkdir -p ${mnt_pt}
 
@@ -116,6 +115,7 @@ function build_docker_image()
 	guestunmount ${mnt_pt}
 }
 
+[ -z ${ACRN_TRACE_SHELL_ENABLE} ] || set -x
 
 # Create the dir if doesn't exsit
 mkdir -p ${ACRN_HOST_DIR}
