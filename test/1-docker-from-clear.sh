@@ -70,11 +70,9 @@ function download_image()
 
 	[ -r $2 ] && xz -kd $2 && { echo $2 " exists, just use it"; return 0; }
 
-	echo -n "Starting to download image : " $1/$2 "@ "
-       	date 
+	echo -n "Starting to download image : " $1/$2 "@ "; date 
 	wget -q -c $1/$2 && xz -kd $2 || exit -1
-	echo -n "Completed downloading image : " $1/$2 "@ "
-       	date 
+	echo -n "Completed downloading image : " $1/$2 "@ "; date 
 }
 
 # $1: ACRN_CLEAR_OS_VERSION
@@ -100,19 +98,36 @@ function build_docker_image()
 	docker exec ${ACRN_DOCKER_NAME} mkdir -p /etc/ssl/certs/
 	docker exec ${ACRN_DOCKER_NAME} cp ${ACRN_MNT_VOL}/${PEM_SUPD} /etc/ssl/certs/
 	docker exec ${ACRN_DOCKER_NAME} cp ${ACRN_MNT_VOL}/${PEM_CLEAR} /etc/ssl/certs/
+
 #	docker exec ${ACRN_DOCKER_NAME} swupd update
-	echo "Call swupd bundle-add..."
-	date
+	echo -n "swupd bundle-add start @"; date
 	docker exec ${ACRN_DOCKER_NAME} swupd bundle-add \
-		c-basic storage-utils-dev  dev-utils-dev user-basic-dev
-	date
+		c-basic storage-utils-dev  dev-utils-dev user-basic-dev > /dev/null 2>&1
+	echo -n "swupd bundle-add end @"; date
 	docker exec ${ACRN_DOCKER_NAME} pip3 install kconfiglib
+
+	for pkg in `ls ${ACRN_MNT_VOL}/linux-firmware-*`; do
+	   docker exec ${ACRN_DOCKER_NAME} ${ACRN_MNT_VOL}/7-z-unpack-rpm.sh ${pkg} /
+	done;
+
 	docker stop ${ACRN_DOCKER_NAME}
 	docker commit ${ACRN_DOCKER_NAME} ${ACRN_DOCKER_IMAGE}:$1
 	docker rm ${ACRN_DOCKER_NAME}
 	docker rmi  ${ACRN_DOCKER_IMAGE}:"t"$1
 
 	guestunmount ${mnt_pt}
+}
+
+# $1 -- the version# of clearlinux
+function download_firmware() {
+	local URL="https://download.clearlinux.org/releases/$1/clear/x86_64/os/Packages/"
+
+	echo -n "begin to download firmware from clearlinux-"$1 "@"; date;
+        for pkg in `curl -sSL ${URL} | grep -Pioe "<a href=\"linux-firmware-.*\.rpm\">" \
+		| grep -Pioe linux-firmware-.*\.rpm`;  do
+		wget -cL ${URL}/$pkg;
+	done;
+	echo -n "end download firmware from clearlinux-"$1 "@"; date;
 }
 
 [ -z ${ACRN_TRACE_SHELL_ENABLE} ] || set -x
@@ -129,6 +144,8 @@ get_url ${ACRN_CLEAR_OS_VERSION}
 download_image  ${IMAGE_BASE} ${CLEAR_IMAGE_FNAME}
 
 ACRN_CLEAR_OS_VERSION=`echo ${CLEAR_IMAGE_FNAME} | grep -ioe "[0-9]*"`
+
+download_firmware ${ACRN_CLEAR_OS_VERSION}
 
 IMAGE=${ACRN_DOCKER_IMAGE}:${ACRN_CLEAR_OS_VERSION}
 

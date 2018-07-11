@@ -2,9 +2,12 @@
 
 declare -A commands
 commands=(
-	[wget]="Need to install wget commands/package"
+
 	[xz]="xz commandline missed, install it please"
 	[git]="git command missed, install it first"
+	[sed]="Need to install sed command"
+	[wget]="Need to install wget commands/package"
+	[curl]="Please install curl command"
 	[docker]="Need to install docker.io package"
 	[guestmount]="Need to install libguestfs and libguestfs-tools package" 
 	[qemu-system-x86_64]="Need to install qemu/x86, qemu-system-x86_64 missed"

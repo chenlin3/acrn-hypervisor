@@ -140,6 +140,8 @@ mount ${IMG_DEV_LOOP}p3 ./img_p3
 
 cp -a ./cl_p1/* ./img_p1/  # copy clearlinux ESP to our ESP partition
 cp -a ./cl_p3/* ./img_p3/  # copy clearlinux rootfs to our rootfs partition
+cp -a /lib/firmware/intel-ucode ./img_p3/lib/firmware/intel-ucode
+cp -a /lib/firmware/i915 ./img_p3/lib/firmware/i915
 
 TMP_STR=`fdisk -l -o uuid,device ${IMG_DEV_LOOP} | grep ${IMG_DEV_LOOP}p3`
 UUID_ROOT=${TMP_STR::36}

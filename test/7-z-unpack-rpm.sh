@@ -39,6 +39,9 @@
 # $1 : the name of rpm package 
 RPM_PKG=$1
 
+# $2 : the prefix of rpm package installation the root directory
+[ $# -eq 2 ] && RPM_INSTALL_DIR=$2 || RPM_INSTALL_DIR=`pwd`
+
 if [ "${RPM_PKG}"X = "X" ] || [ ! -e "${RPM_PKG}" ]; then
 	echo "Input a rpm package to install"
 	exit 1
@@ -72,5 +75,5 @@ dd if=$RPM_PKG of=$TMP_FILE ibs=$offset skip=1
 # If the rpm package is compressed by otehr compressor, add it here :)
 compressor=`file $TMP_FILE | grep -Eio 'gzip | bzip2 | xz' | tr 'A-Z' 'a-z'`
 
-cat $TMP_FILE | $compressor -d | cpio -ivdm
+cat $TMP_FILE | $compressor -d | cpio -ivdm -D ${RPM_INSTALL_DIR}
 

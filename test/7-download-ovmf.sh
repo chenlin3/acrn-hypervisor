@@ -36,7 +36,7 @@ fi;
 if [ $? -eq 0 ]; then
 	rpm2cpio ${OVMF_RPM} | cpio -idvm
 else
-	./unpack-rpm.sh ${OVMF_RPM}
+	./7-z-unpack-rpm.sh ${OVMF_RPM}
 fi;
 
 

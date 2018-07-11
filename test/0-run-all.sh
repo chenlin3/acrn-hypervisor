@@ -23,7 +23,7 @@ export ACRN_CLEAR_OS_VERSION=""
 # If the dir doesn't exist, the script will create it if not exist. Change the
 # layout as you like.
 # export ACRN_HOST_DIR=/home/${USER}/vdisk
-export ACRN_HOST_DIR=/work/vdisk
+export ACRN_HOST_DIR=/work/vdisk333
 
 # The final disk image layout for qemu/ovmf or dd to disk, change it as u like
 export ACRN_DISK_IMAGE=clear_rootfs.img
@@ -32,6 +32,12 @@ export ACRN_DISK_P1=200      # EFI ESP
 export ACRN_DISK_P2=200      # Linux swap
 export ACRN_DISK_P3=4096     # sos rootfs
 export ACRN_DISK_P4=         # user partition uses the rest
+
+
+# =========================================================================
+# Most likely, you needn't modify the other after this line
+# =========================================================================
+
 
 # Download Clearlinux OS image by the URL. Don't change it unless u know the
 # URL is changed
@@ -60,7 +66,7 @@ export ACRN_ENV_VARS=acrn-env.txt
 export ACRN_MNT_VOL=/acrn-vol
 
 # Check if build environment is ok
-./build-env-check.sh
+./0-z-build-env-check.sh
 
 [ `pwd` != ${ACRN_HOST_DIR} ] && cp -a *.sh ${ACRN_HOST_DIR}/
 
@@ -122,8 +128,8 @@ docker exec ${ACRN_DOCKER_NAME} chmod 777 ${ACRN_MNT_VOL}/${ACRN_ENV_VARS}
 
 docker stop  ${ACRN_DOCKER_NAME}
 
-# Comment this if you want to keep the docker for debugging or build env.
-docker rm   ${ACRN_DOCKER_NAME}
+# Comment this if you want to keep the docker as a build environment
+# docker rm  ${ACRN_DOCKER_NAME}
 
 # run qemu/ovmf in local host
 sed -i 's/^ACRN_/export ACRN_/g' ${ACRN_HOST_DIR}/${ACRN_ENV_VARS}

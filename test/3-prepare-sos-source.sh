@@ -101,6 +101,10 @@ fi;
 # apply the patches in pk414 repo to SOS kernel
 [ -d ${SOS_DIR} ] && apply_patches
 
+mkdir -p ${SOS_DIR}/firmware
+cp -a /lib/firmware/intel-ucode ${SOS_DIR}/firmware
+cp -a /lib/firmware/i915 ${SOS_DIR}/firmware
+
 # export it in Docker and indicate that SOS source is Ok
 export ACRN_SOS_DIR=${SOS_DIR}
 
