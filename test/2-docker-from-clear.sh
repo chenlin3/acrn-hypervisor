@@ -107,7 +107,7 @@ function build_docker_image()
 	docker exec ${ACRN_DOCKER_NAME} pip3 install kconfiglib
 
 	for pkg in `ls ${ACRN_MNT_VOL}/linux-firmware-*`; do
-	   docker exec ${ACRN_DOCKER_NAME} ${ACRN_MNT_VOL}/7-z-unpack-rpm.sh ${pkg} /
+	   docker exec ${ACRN_DOCKER_NAME} ${ACRN_MNT_VOL}/9-unpack-rpm.sh ${pkg} /
 	done;
 
 	docker stop ${ACRN_DOCKER_NAME}
@@ -125,7 +125,8 @@ function download_firmware() {
 	echo -n "begin to download firmware from clearlinux-"$1 "@"; date;
         for pkg in `curl -sSL ${URL} | grep -Pioe "<a href=\"linux-firmware-.*\.rpm\">" \
 		| grep -Pioe linux-firmware-.*\.rpm`;  do
-		wget -cL ${URL}/$pkg;
+		echo "downloading ${URL}/$pkg"
+		wget -qcL ${URL}/$pkg;
 	done;
 	echo -n "end download firmware from clearlinux-"$1 "@"; date;
 }
