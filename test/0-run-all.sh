@@ -71,13 +71,15 @@ export ACRN_MNT_VOL=/acrn-vol
 # Check if build environment is ok
 ./1-build-env-check.sh
 
+mkdir -p ${ACRN_HOST_DIR}/
+
 [ `pwd` != ${ACRN_HOST_DIR} ] && cp -a *.sh ${ACRN_HOST_DIR}/
 
 cd ${ACRN_HOST_DIR}/
 
 echo "======================================================================"
-echo "It will take several hours to download clearlinux image and bundles,"
-echo "check it tommorrow if you run this script at night"
+echo -e "It will take \033[31m hours \033[0m to download clearlinux image and bundles,"
+echo -e "check it tommorrow if you run this script at night"
 echo "======================================================================"
 
 # Pull KVM image of clearlinux, and build a docker image as dev environment
