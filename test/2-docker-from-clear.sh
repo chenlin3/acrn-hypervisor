@@ -106,7 +106,7 @@ function build_docker_image()
 	echo -n "swupd bundle-add end @"; date
 	docker exec ${ACRN_DOCKER_NAME} pip3 install kconfiglib
 
-	for pkg in `ls ${ACRN_HOST_DIR}/linux-firmware-*`; do
+	for pkg in `ls linux-firmware-*`; do
 	   docker exec ${ACRN_DOCKER_NAME} ${ACRN_MNT_VOL}/9-unpack-rpm.sh ${pkg} /
 	done;
 
@@ -125,6 +125,7 @@ function download_firmware() {
 	echo -n "begin to download firmware from clearlinux-"$1 "@"; date;
         for pkg in `curl -sSL ${URL} | grep -Pioe "<a href=\"linux-firmware-.*\.rpm\">" \
 		| grep -Pioe linux-firmware-.*\.rpm`;  do
+		[ -f ${pkg} ] && { echo "${pkg} exists in current dir"; continue; }
 		echo "downloading ${URL}/$pkg"
 		wget -qcL ${URL}/$pkg;
 	done;

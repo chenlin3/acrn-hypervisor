@@ -75,6 +75,11 @@ export ACRN_MNT_VOL=/acrn-vol
 
 cd ${ACRN_HOST_DIR}/
 
+echo "======================================================================"
+echo "It will take several hours to download clearlinux image and bundles,"
+echo "check it tommorrow if you run this script at night"
+echo "======================================================================"
+
 # Pull KVM image of clearlinux, and build a docker image as dev environment
 { echo -n "==== Runing script 2-docker-from-clear.sh  ====@ "; date; } > ${LOG_FILE}
 ./2-docker-from-clear.sh 2>&1 | tee -a ${LOG_FILE}
@@ -127,6 +132,9 @@ docker stop  ${ACRN_DOCKER_NAME}
 # run qemu/ovmf in local host
 sed -i 's/^ACRN_/export ACRN_/g' ${ACRN_HOST_DIR}/${ACRN_ENV_VARS}
 source ${ACRN_HOST_DIR}/${ACRN_ENV_VARS}
+
+# remove it, otherwise, conflict when run it in the same dir next time
+rm -f ${ACRN_HOST_DIR}/${ACRN_ENV_VARS}
 
 
 echo "If failed, trying manually starting qemu by: qemu-system-x86_64 -bios " \

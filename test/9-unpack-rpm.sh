@@ -47,6 +47,8 @@ if [ "${RPM_PKG}"X = "X" ] || [ ! -e "${RPM_PKG}" ]; then
 	exit 1
 fi
 
+echo "Installing RPM package: ${RPM_PKG}"
+
 TMP_FILE=`mktemp`
 
 # The size of rpmlead located at the beginning of rpm pkg
