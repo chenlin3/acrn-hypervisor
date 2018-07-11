@@ -2,7 +2,9 @@
 #
 # This script is to create a disk image with ACRN hypervisor and service
 # OS. The final disk image can be used to "dd" to USB disk or hard disk,
-# to run, or run in qemu/ovmf or simics emulator.
+# to run, or run in qemu/ovmf or simics emulator. At this time, Guest OS
+# doesn't include the image. You can copy your guest os image into the 4th
+# patition of ACRN_DISK_IMAGE.
 
 # Make sure that system has the following commands before executing 
 #     wget, curl, sha512sum, grep, sed, xz, basename, dirname,
@@ -50,11 +52,11 @@ export ACRN_CLEAR_URL=https://cdn.download.clearlinux.org
 
 # The name of the docker image that we will create. We will alos add a tag
 # by clearlinux os-version
-export ACRN_DOCKER_IMAGE=acrn-clear-2
+export ACRN_DOCKER_IMAGE=acrn-clear
 
 # Docker name created from ACRN_DOCKER_IMAGE as development environment to
 # build ACRN source code and disk image.
-export ACRN_DOCKER_NAME=acrn-dev-2
+export ACRN_DOCKER_NAME=acrn-dev
 
 # UEFI firmware which will be used for QEMU booting. It is the filename in UEFI
 # rpm package from UEFI open source project. 

@@ -79,7 +79,7 @@ function download_image()
 # $2: raw image file
 function build_docker_image()
 {
-	local mnt_pt=/tmp/cl_$1
+	local mnt_pt=/tmp/cl_$1_$$
 	mkdir -p ${mnt_pt}
 
 	# The 3rd partition(/dev/sda3) is the rootfs of clearlinux kvm image.
@@ -106,7 +106,7 @@ function build_docker_image()
 	echo -n "swupd bundle-add end @"; date
 	docker exec ${ACRN_DOCKER_NAME} pip3 install kconfiglib
 
-	for pkg in `ls ${ACRN_MNT_VOL}/linux-firmware-*`; do
+	for pkg in `ls ${ACRN_HOST_DIR}/linux-firmware-*`; do
 	   docker exec ${ACRN_DOCKER_NAME} ${ACRN_MNT_VOL}/9-unpack-rpm.sh ${pkg} /
 	done;
 
