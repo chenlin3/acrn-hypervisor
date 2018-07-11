@@ -107,7 +107,7 @@ function build_docker_image()
 	docker exec ${ACRN_DOCKER_NAME} pip3 install kconfiglib
 
 	for pkg in `ls linux-firmware-*`; do
-	   docker exec ${ACRN_DOCKER_NAME} ${ACRN_MNT_VOL}/9-unpack-rpm.sh ${pkg} /
+	   docker exec ${ACRN_DOCKER_NAME} ${ACRN_MNT_VOL}/9-unpack-rpm.sh "${ACRN_MNT_VOL}/${pkg}" "/"
 	done;
 
 	docker stop ${ACRN_DOCKER_NAME}
