@@ -1,0 +1,10 @@
+The scripts are to create a disk image to run acrn hypervisor and service OS.
+It pulls opensourced code from github.com/projectacrn and clearlinux pk414 
+git, build and then create a disk image.
+
+Just run the first script (0-run-all.sh) to get an image, which can be used in
+qemu/ovmf or simics.  The image can be "dd" to USB disk or hard disk to demo
+acrn.
+
+Currently, UOS doesn't include the image.  You can copy the UOS into the 4rd
+parition of disk image.
