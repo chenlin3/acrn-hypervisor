@@ -38,7 +38,7 @@ fi;
 
 # the name fo disk image which will be created at last. used to boot
 # in UEFI OVMF
-[ -z ${ACRN_DISK_IMAGE} ] && ACRN_DISK_IMAGE=clear_rootfs.img
+[ -z ${ACRN_DISK_IMAGE} ] && ACRN_DISK_IMAGE=acrn_vdisk_all.img
 [ -z ${ACRN_DISK_SIZE} ] && ACRN_DISK_SIZE=20480
 [ -z ${ACRN_DISK_P1} ] && ACRN_DISK_P1=200
 [ -z ${ACRN_DISK_P2} ] && ACRN_DISK_P2=200
@@ -212,7 +212,7 @@ rmdir ./cl_p1 ./cl_p3 ./img_p1 ./img_p3
 
 export ACRN_DISK_IMAGE=${ACRN_DISK_IMAGE}
 
-echo ${ACRN_DISK_IMAGE} "can be used to boot in qemu/kvm, or simics. Or dd into hard disk"
+echo -e "\033[31m ${ACRN_DISK_IMAGE} is to boot in qemu/kvm, or simics. Or dd into hard/USB disk to boot\033[0m"
 
 env | grep ACRN > ${ACRN_MNT_VOL}/${ACRN_ENV_VARS}
 

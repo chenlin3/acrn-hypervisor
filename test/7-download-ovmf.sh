@@ -10,7 +10,7 @@ cd ${ACRN_MNT_VOL} || { echo "Failed to cd "${ACRN_MNT_VOL}; exit -1; }
 [ -f ${ACRN_ENV_VARS} ] && \
 	                { for line in `cat ${ACRN_ENV_VARS}`; do export $line; done; }
 
-[ -z ${ACRN_DISK_IMAGE} ] && ACRN_DISK_IMAGE=./clear_rootfs.img
+[ -z ${ACRN_DISK_IMAGE} ] && ACRN_DISK_IMAGE=./acrn_vdisk_all.img
 
 [ -z ${ACRN_TRACE_SHELL_ENABLE} ] || set -x
 

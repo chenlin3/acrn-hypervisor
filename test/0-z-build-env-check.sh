@@ -2,7 +2,6 @@
 
 declare -A commands
 commands=(
-
 	[xz]="xz commandline missed, install it please"
 	[git]="git command missed, install it first"
 	[sed]="Need to install sed command"

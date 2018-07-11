@@ -23,10 +23,10 @@ export ACRN_CLEAR_OS_VERSION=""
 # If the dir doesn't exist, the script will create it if not exist. Change the
 # layout as you like.
 # export ACRN_HOST_DIR=/home/${USER}/vdisk
-export ACRN_HOST_DIR=/work/vdisk333
+export ACRN_HOST_DIR=/work/vdisk
 
 # The final disk image layout for qemu/ovmf or dd to disk, change it as u like
-export ACRN_DISK_IMAGE=clear_rootfs.img
+export ACRN_DISK_IMAGE=acrn_vdisk_all.img
 export ACRN_DISK_SIZE=13240  # disk size (MB)
 export ACRN_DISK_P1=200      # EFI ESP
 export ACRN_DISK_P2=200      # Linux swap
@@ -35,7 +35,7 @@ export ACRN_DISK_P4=         # user partition uses the rest
 
 
 # =========================================================================
-# Most likely, you needn't modify the other after this line
+# Most likely, you needn't modify the script after this line
 # =========================================================================
 
 
@@ -72,31 +72,21 @@ export ACRN_MNT_VOL=/acrn-vol
 
 cd ${ACRN_HOST_DIR}/
 
-
-# Only the fist script (1-docker-from-clear.sh) needs to run with "sudo -E"
-# because it uses "losetup" and "mount" commands in host system to get the
-# base image (rootfs) from clearlinux KVM image.
-#
 # Pull KVM image of clearlinux, and build a docker image as dev environment
 { echo -n "==== Runing script 1-docker-from-clear.sh  ====@ "; date; } > ${LOG_FILE}
 ./1-docker-from-clear.sh 2>&1 | tee -a ${LOG_FILE}
 [ $? -ne 0 ] && { echo "failed to build clearlinux docker image"; exit -1; }
-
 
 # Create and run ClearLinux Docker
 { echo -n "==== Runing script 2-setup-clearlinux-docker.sh ====@ "; date; } >> ${LOG_FILE}
 ./2-setup-clearlinux-docker.sh 2>&1 | tee -a ${LOG_FILE}
 [ $? -ne 0 ] && { echo "failed to run clearlinux docker"; exit -1; }
 
-
-
 # prepare SOS kernel source code
 { echo -n "==== Runing script 3-prepare-sos-source.sh  ====@ "; date; } >> ${LOG_FILE}
 docker exec ${ACRN_DOCKER_NAME}  ${ACRN_MNT_VOL}/3-prepare-sos-source.sh 2>&1 \
 	| tee -a ${LOG_FILE}
 [ $? -ne 0 ] && { echo "failed to get SOS kernel source"; exit 1; }
-
-
 
 # prepare HV/DM source code
 { echo -n "==== Runing script 4-clone-hv-dm.sh  ====@ "; date; } >> ${LOG_FILE}
@@ -140,4 +130,5 @@ echo "If failed,  you can try manully staring by: qemu-system-x86_64 -bios " \
 	${ACRN_HOST_DIR}/${ACRN_UEFI_FW} \
 	-hda "${ACRN_HOST_DIR}/${ACRN_DISK_IMAGE}"
 
-qemu-system-x86_64 -bios ${ACRN_HOST_DIR}/${ACRN_UEFI_FW} -hda ${ACRN_HOST_DIR}/${ACRN_DISK_IMAGE} -m 4G -cpu Broadwell -smp cpus=4,cores=4,threads=1
+qemu-system-x86_64 -bios ${ACRN_HOST_DIR}/${ACRN_UEFI_FW} -hda ${ACRN_HOST_DIR}/${ACRN_DISK_IMAGE} -m 4G -cpu Broadwell -smp cpus=4,cores=4,threads=1 -serial stdio
+
