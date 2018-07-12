@@ -32,9 +32,9 @@ build_sos_kernel() {
 #        sed -i '4a export CCACHE_DISABLE=1' Makefile
 
         # remove firmware compiling in kconfig
-#        sed -i '/CONFIG_EXTRA_FIRMWARE/'d  .config
-#        sed -i '1i   CONFIG_EXTRA_FIRMWARE=""'  .config
-#        sed -i '/CONFIG_EXTRA_FIRMWARE_DIR/'d .config
+        sed -i '/CONFIG_EXTRA_FIRMWARE/'d  .config
+        sed -i '1i   CONFIG_EXTRA_FIRMWARE=""'  .config
+        sed -i '/CONFIG_EXTRA_FIRMWARE_DIR/'d .config
 
 	# Build USB keyboard and mouse so that users can work in the console
         sed -i 's/^CONFIG_USB_HID[ =].*$/CONFIG_USB_HID=m\nCONFIG_USB_KBD=m\nCONFIG_USB_MOUSE=m\n/' .config
